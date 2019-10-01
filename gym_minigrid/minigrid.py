@@ -38,13 +38,9 @@ OBJECT_TO_IDX = {
     'empty'         : 1,
     'wall'          : 2,
     'floor'         : 3,
-    'door'          : 4,
-    'key'           : 5,
-    'ball'          : 6,
-    'box'           : 7,
-    'goal'          : 8,
-    'lava'          : 9,
+    'uncovered'     : 8,
     'agent'         : 10,
+
 }
 
 IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))
@@ -109,21 +105,37 @@ class WorldObj:
         r.setLineColor(c[0], c[1], c[2])
         r.setColor(c[0], c[1], c[2])
 
-# class Goal(WorldObj):
-#     def __init__(self):
-#         super().__init__('goal', 'green')
-#
-#     def can_overlap(self):
-#         return True
-#
-#     def render(self, r):
-#         self._set_color(r)
-#         r.drawPolygon([
-#             (0          , CELL_PIXELS),
-#             (CELL_PIXELS, CELL_PIXELS),
-#             (CELL_PIXELS,           0),
-#             (0          ,           0)
-#         ])
+class Covered(WorldObj):
+    def __init__(self):
+        super().__init__('empty', None)
+    
+    def can_overlap(self):
+        return True
+    
+    def render(self, r):
+        self._set_color(r)
+        r.drawPolygon([
+            (0          , CELL_PIXELS),
+            (CELL_PIXELS, CELL_PIXELS),
+            (CELL_PIXELS,           0),
+            (0          ,           0)
+        ])
+
+class Uncovered(WorldObj):
+    def __init__(self):
+        super().__init__('uncovered', 'green')
+
+    def can_overlap(self):
+        return True
+
+    def render(self, r):
+        self._set_color(r)
+        r.drawPolygon([
+            (0          , CELL_PIXELS),
+            (CELL_PIXELS, CELL_PIXELS),
+            (CELL_PIXELS,           0),
+            (0          ,           0)
+        ])
 
 class Floor(WorldObj):
     """
@@ -148,51 +160,6 @@ class Floor(WorldObj):
             (1          ,           1)
         ])
 
-# class Lava(WorldObj):
-#     def __init__(self):
-#         super().__init__('lava', 'red')
-#
-#     def can_overlap(self):
-#         return True
-#
-#     def render(self, r):
-#         orange = 255, 128, 0
-#         r.setLineColor(*orange)
-#         r.setColor(*orange)
-#         r.drawPolygon([
-#             (0          , CELL_PIXELS),
-#             (CELL_PIXELS, CELL_PIXELS),
-#             (CELL_PIXELS, 0),
-#             (0          , 0)
-#         ])
-#
-#         # drawing the waves
-#         r.setLineColor(0, 0, 0)
-#
-#         r.drawPolyline([
-#             (.1 * CELL_PIXELS, .3 * CELL_PIXELS),
-#             (.3 * CELL_PIXELS, .4 * CELL_PIXELS),
-#             (.5 * CELL_PIXELS, .3 * CELL_PIXELS),
-#             (.7 * CELL_PIXELS, .4 * CELL_PIXELS),
-#             (.9 * CELL_PIXELS, .3 * CELL_PIXELS),
-#         ])
-#
-#         r.drawPolyline([
-#             (.1 * CELL_PIXELS, .5 * CELL_PIXELS),
-#             (.3 * CELL_PIXELS, .6 * CELL_PIXELS),
-#             (.5 * CELL_PIXELS, .5 * CELL_PIXELS),
-#             (.7 * CELL_PIXELS, .6 * CELL_PIXELS),
-#             (.9 * CELL_PIXELS, .5 * CELL_PIXELS),
-#         ])
-#
-#         r.drawPolyline([
-#             (.1 * CELL_PIXELS, .7 * CELL_PIXELS),
-#             (.3 * CELL_PIXELS, .8 * CELL_PIXELS),
-#             (.5 * CELL_PIXELS, .7 * CELL_PIXELS),
-#             (.7 * CELL_PIXELS, .8 * CELL_PIXELS),
-#             (.9 * CELL_PIXELS, .7 * CELL_PIXELS),
-#         ])
-
 class Wall(WorldObj):
     def __init__(self, color='grey'):
         super().__init__('wall', color)
@@ -208,153 +175,6 @@ class Wall(WorldObj):
             (CELL_PIXELS,           0),
             (0          ,           0)
         ])
-
-# class Door(WorldObj):
-#     def __init__(self, color, is_open=False, is_locked=False):
-#         super().__init__('door', color)
-#         self.is_open = is_open
-#         self.is_locked = is_locked
-#
-#     def can_overlap(self):
-#         """The agent can only walk over this cell when the door is open"""
-#         return self.is_open
-#
-#     def see_behind(self):
-#         return self.is_open
-#
-#     def toggle(self, env, pos):
-#         # If the player has the right key to open the door
-#         if self.is_locked:
-#             if isinstance(env.carrying, Key) and env.carrying.color == self.color:
-#                 self.is_locked = False
-#                 self.is_open = True
-#                 return True
-#             return False
-#
-#         self.is_open = not self.is_open
-#         return True
-#
-#     def render(self, r):
-#         c = COLORS[self.color]
-#         r.setLineColor(c[0], c[1], c[2])
-#         r.setColor(c[0], c[1], c[2], 50 if self.is_locked else 0)
-#
-#         if self.is_open:
-#             r.drawPolygon([
-#                 (CELL_PIXELS-2, CELL_PIXELS),
-#                 (CELL_PIXELS  , CELL_PIXELS),
-#                 (CELL_PIXELS  ,           0),
-#                 (CELL_PIXELS-2,           0)
-#             ])
-#             return
-#
-#         r.drawPolygon([
-#             (0          , CELL_PIXELS),
-#             (CELL_PIXELS, CELL_PIXELS),
-#             (CELL_PIXELS,           0),
-#             (0          ,           0)
-#         ])
-#         r.drawPolygon([
-#             (2            , CELL_PIXELS-2),
-#             (CELL_PIXELS-2, CELL_PIXELS-2),
-#             (CELL_PIXELS-2,           2),
-#             (2            ,           2)
-#         ])
-#
-#         if self.is_locked:
-#             # Draw key slot
-#             r.drawLine(
-#                 CELL_PIXELS * 0.55,
-#                 CELL_PIXELS * 0.5,
-#                 CELL_PIXELS * 0.75,
-#                 CELL_PIXELS * 0.5
-#             )
-#         else:
-#             # Draw door handle
-#             r.drawCircle(CELL_PIXELS * 0.75, CELL_PIXELS * 0.5, 2)
-#
-# class Key(WorldObj):
-#     def __init__(self, color='blue'):
-#         super(Key, self).__init__('key', color)
-#
-#     def can_pickup(self):
-#         return True
-#
-#     def render(self, r):
-#         self._set_color(r)
-#
-#         # Vertical quad
-#         r.drawPolygon([
-#             (16, 10),
-#             (20, 10),
-#             (20, 28),
-#             (16, 28)
-#         ])
-#
-#         # Teeth
-#         r.drawPolygon([
-#             (12, 19),
-#             (16, 19),
-#             (16, 21),
-#             (12, 21)
-#         ])
-#         r.drawPolygon([
-#             (12, 26),
-#             (16, 26),
-#             (16, 28),
-#             (12, 28)
-#         ])
-#
-#         r.drawCircle(18, 9, 6)
-#         r.setLineColor(0, 0, 0)
-#         r.setColor(0, 0, 0)
-#         r.drawCircle(18, 9, 2)
-
-# class Ball(WorldObj):
-#     def __init__(self, color='blue'):
-#         super(Ball, self).__init__('ball', color)
-#
-#     def can_pickup(self):
-#         return True
-#
-#     def render(self, r):
-#         self._set_color(r)
-#         r.drawCircle(CELL_PIXELS * 0.5, CELL_PIXELS * 0.5, 10)
-#
-# class Box(WorldObj):
-#     def __init__(self, color, contains=None):
-#         super(Box, self).__init__('box', color)
-#         self.contains = contains
-#
-#     def can_pickup(self):
-#         return True
-#
-#     def render(self, r):
-#         c = COLORS[self.color]
-#         r.setLineColor(c[0], c[1], c[2])
-#         r.setColor(0, 0, 0)
-#         r.setLineWidth(2)
-#
-#         r.drawPolygon([
-#             (4            , CELL_PIXELS-4),
-#             (CELL_PIXELS-4, CELL_PIXELS-4),
-#             (CELL_PIXELS-4,             4),
-#             (4            ,             4)
-#         ])
-#
-#         r.drawLine(
-#             4,
-#             CELL_PIXELS / 2,
-#             CELL_PIXELS - 4,
-#             CELL_PIXELS / 2
-#         )
-#
-#         r.setLineWidth(1)
-#
-#     def toggle(self, env, pos):
-#         # Replace the box by its contents
-#         env.grid.set(*pos, self.contains)
-#         return True
 
 class Grid:
     """
@@ -402,6 +222,12 @@ class Grid:
         assert j >= 0 and j < self.height
         self.grid[j * self.width + i] = v
 
+    def setAll(self, v):
+        for i in range(1, self.width-1):
+            for j in range(1, self.height-1):
+                if self.grid[j* self.width + i] is None:
+                    self.grid[j* self.width + i] = v
+            
     def get(self, i, j):
         assert i >= 0 and i < self.width
         assert j >= 0 and j < self.height
@@ -572,18 +398,8 @@ class Grid:
                     v = Wall(color)
                 elif objType == 'floor':
                     v = Floor(color)
-                elif objType == 'ball':
-                    v = Ball(color)
-                elif objType == 'key':
-                    v = Key(color)
-                elif objType == 'box':
-                    v = Box(color)
-                elif objType == 'door':
-                    v = Door(color, is_open, is_locked)
-                elif objType == 'goal':
-                    v = Goal()
-                elif objType == 'lava':
-                    v = Lava()
+                elif objType == 'uncovered':
+                    v = Uncovered()
                 else:
                     assert False, "unknown obj type in decode '%s'" % objType
 
@@ -697,7 +513,7 @@ class MiniGridEnv(gym.Env):
         })
         # Change to (-1,1) ? neeed negative reward
         # Range of possible rewards
-        self.reward_range = (0, 1)
+        self.reward_range = (-1, 1)
 
         # Renderer object used to render the whole grid (full-scale)
         self.grid_render = None
@@ -769,12 +585,7 @@ class MiniGridEnv(gym.Env):
         OBJECT_TO_STR = {
             'wall'          : 'W',
             'floor'         : 'F',
-            'door'          : 'D',
-            'key'           : 'K',
-            'ball'          : 'A',
-            'box'           : 'B',
-            'goal'          : 'G',
-            'lava'          : 'V',
+            'uncovered'     : 'U',
         }
 
         # Short string for opened door
@@ -825,11 +636,17 @@ class MiniGridEnv(gym.Env):
 
     def _reward(self):
         """
-        Compute the reward to be given upon success
+        Compute the reward to be given at given step
         """
         #need to change reward from giving out reward at end goal(removed) to giving rewards at every step?
+        cell = self.grid.get(*self.agent_pos)
 
-        return 1 - 0.9 * (self.step_count / self.max_steps)
+        if cell is None:
+            return -1
+        elif cell.type == 'uncovered':
+            return 1
+        else:
+            return -1
 
     def _rand_int(self, low, high):
         """
@@ -1162,53 +979,17 @@ class MiniGridEnv(gym.Env):
         elif action == self.actions.down:
             if down_cell == None or down_cell.can_overlap():
                 self.agent_pos = down_pos
-
-        # # Rotate left
-        # if action == self.actions.left:
-        #     self.agent_dir -= 1
-        #     if self.agent_dir < 0:
-        #         self.agent_dir += 4
-        #
-        # # Rotate right
-        # elif action == self.actions.right:
-        #     self.agent_dir = (self.agent_dir + 1) % 4
-        #
-        # # Move forward
-        # elif action == self.actions.forward:
-        #     if fwd_cell == None or fwd_cell.can_overlap():
-        #         self.agent_pos = fwd_pos
-        #     if fwd_cell != None and fwd_cell.type == 'goal':
-        #         done = True
-        #         reward = self._reward()
-        #     if fwd_cell != None and fwd_cell.type == 'lava':
-        #         done = True
-
-        # # Pick up an object
-        # elif action == self.actions.pickup:
-        #     if fwd_cell and fwd_cell.can_pickup():
-        #         if self.carrying is None:
-        #             self.carrying = fwd_cell
-        #             self.carrying.cur_pos = np.array([-1, -1])
-        #             self.grid.set(*fwd_pos, None)
-        #
-        # # Drop an object
-        # elif action == self.actions.drop:
-        #     if not fwd_cell and self.carrying:
-        #         self.grid.set(*fwd_pos, self.carrying)
-        #         self.carrying.cur_pos = fwd_pos
-        #         self.carrying = None
-        #
-        # # Toggle/activate an object
-        # elif action == self.actions.toggle:
-        #     if fwd_cell:
-        #         fwd_cell.toggle(self, fwd_pos)
-
         # Done action (not used by default)
         elif action == self.actions.done:
             pass
-
         else:
             assert False, "unknown action"
+
+        #determine reward
+        reward = self._reward()
+
+        #set cell as covered
+        self.grid.set(*self.agent_pos,None)
 
         if self.step_count >= self.max_steps:
             done = True
