@@ -30,7 +30,7 @@ class EmptyEnv(MiniGridEnv):
         self.grid.wall_rect(0, 0, width, height)
 
         # Place a goal square in the bottom-right corner
-        self.grid.set(width - 2, height - 2, Goal())
+        # self.grid.set(width - 2, height - 2, Goal())
 
         # Place the agent
         if self.agent_start_pos is not None:
@@ -39,7 +39,7 @@ class EmptyEnv(MiniGridEnv):
         else:
             self.place_agent()
 
-        self.mission = "get to the green goal square"
+        self.mission = "Explore every grid space."
 
 class EmptyEnv5x5(EmptyEnv):
     def __init__(self):

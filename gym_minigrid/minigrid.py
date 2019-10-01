@@ -48,7 +48,7 @@ OBJECT_TO_IDX = {
 }
 
 IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))
-
+# we aren't using directions, need to change this to be just u, d , l , r w/o orientation?
 # Map of agent direction indices to vectors
 DIR_TO_VEC = [
     # Pointing right (positive X)
@@ -109,21 +109,21 @@ class WorldObj:
         r.setLineColor(c[0], c[1], c[2])
         r.setColor(c[0], c[1], c[2])
 
-class Goal(WorldObj):
-    def __init__(self):
-        super().__init__('goal', 'green')
-
-    def can_overlap(self):
-        return True
-
-    def render(self, r):
-        self._set_color(r)
-        r.drawPolygon([
-            (0          , CELL_PIXELS),
-            (CELL_PIXELS, CELL_PIXELS),
-            (CELL_PIXELS,           0),
-            (0          ,           0)
-        ])
+# class Goal(WorldObj):
+#     def __init__(self):
+#         super().__init__('goal', 'green')
+#
+#     def can_overlap(self):
+#         return True
+#
+#     def render(self, r):
+#         self._set_color(r)
+#         r.drawPolygon([
+#             (0          , CELL_PIXELS),
+#             (CELL_PIXELS, CELL_PIXELS),
+#             (CELL_PIXELS,           0),
+#             (0          ,           0)
+#         ])
 
 class Floor(WorldObj):
     """
@@ -148,50 +148,50 @@ class Floor(WorldObj):
             (1          ,           1)
         ])
 
-class Lava(WorldObj):
-    def __init__(self):
-        super().__init__('lava', 'red')
-
-    def can_overlap(self):
-        return True
-
-    def render(self, r):
-        orange = 255, 128, 0
-        r.setLineColor(*orange)
-        r.setColor(*orange)
-        r.drawPolygon([
-            (0          , CELL_PIXELS),
-            (CELL_PIXELS, CELL_PIXELS),
-            (CELL_PIXELS, 0),
-            (0          , 0)
-        ])
-
-        # drawing the waves
-        r.setLineColor(0, 0, 0)
-
-        r.drawPolyline([
-            (.1 * CELL_PIXELS, .3 * CELL_PIXELS),
-            (.3 * CELL_PIXELS, .4 * CELL_PIXELS),
-            (.5 * CELL_PIXELS, .3 * CELL_PIXELS),
-            (.7 * CELL_PIXELS, .4 * CELL_PIXELS),
-            (.9 * CELL_PIXELS, .3 * CELL_PIXELS),
-        ])
-
-        r.drawPolyline([
-            (.1 * CELL_PIXELS, .5 * CELL_PIXELS),
-            (.3 * CELL_PIXELS, .6 * CELL_PIXELS),
-            (.5 * CELL_PIXELS, .5 * CELL_PIXELS),
-            (.7 * CELL_PIXELS, .6 * CELL_PIXELS),
-            (.9 * CELL_PIXELS, .5 * CELL_PIXELS),
-        ])
-
-        r.drawPolyline([
-            (.1 * CELL_PIXELS, .7 * CELL_PIXELS),
-            (.3 * CELL_PIXELS, .8 * CELL_PIXELS),
-            (.5 * CELL_PIXELS, .7 * CELL_PIXELS),
-            (.7 * CELL_PIXELS, .8 * CELL_PIXELS),
-            (.9 * CELL_PIXELS, .7 * CELL_PIXELS),
-        ])
+# class Lava(WorldObj):
+#     def __init__(self):
+#         super().__init__('lava', 'red')
+#
+#     def can_overlap(self):
+#         return True
+#
+#     def render(self, r):
+#         orange = 255, 128, 0
+#         r.setLineColor(*orange)
+#         r.setColor(*orange)
+#         r.drawPolygon([
+#             (0          , CELL_PIXELS),
+#             (CELL_PIXELS, CELL_PIXELS),
+#             (CELL_PIXELS, 0),
+#             (0          , 0)
+#         ])
+#
+#         # drawing the waves
+#         r.setLineColor(0, 0, 0)
+#
+#         r.drawPolyline([
+#             (.1 * CELL_PIXELS, .3 * CELL_PIXELS),
+#             (.3 * CELL_PIXELS, .4 * CELL_PIXELS),
+#             (.5 * CELL_PIXELS, .3 * CELL_PIXELS),
+#             (.7 * CELL_PIXELS, .4 * CELL_PIXELS),
+#             (.9 * CELL_PIXELS, .3 * CELL_PIXELS),
+#         ])
+#
+#         r.drawPolyline([
+#             (.1 * CELL_PIXELS, .5 * CELL_PIXELS),
+#             (.3 * CELL_PIXELS, .6 * CELL_PIXELS),
+#             (.5 * CELL_PIXELS, .5 * CELL_PIXELS),
+#             (.7 * CELL_PIXELS, .6 * CELL_PIXELS),
+#             (.9 * CELL_PIXELS, .5 * CELL_PIXELS),
+#         ])
+#
+#         r.drawPolyline([
+#             (.1 * CELL_PIXELS, .7 * CELL_PIXELS),
+#             (.3 * CELL_PIXELS, .8 * CELL_PIXELS),
+#             (.5 * CELL_PIXELS, .7 * CELL_PIXELS),
+#             (.7 * CELL_PIXELS, .8 * CELL_PIXELS),
+#             (.9 * CELL_PIXELS, .7 * CELL_PIXELS),
+#         ])
 
 class Wall(WorldObj):
     def __init__(self, color='grey'):
@@ -209,152 +209,152 @@ class Wall(WorldObj):
             (0          ,           0)
         ])
 
-class Door(WorldObj):
-    def __init__(self, color, is_open=False, is_locked=False):
-        super().__init__('door', color)
-        self.is_open = is_open
-        self.is_locked = is_locked
+# class Door(WorldObj):
+#     def __init__(self, color, is_open=False, is_locked=False):
+#         super().__init__('door', color)
+#         self.is_open = is_open
+#         self.is_locked = is_locked
+#
+#     def can_overlap(self):
+#         """The agent can only walk over this cell when the door is open"""
+#         return self.is_open
+#
+#     def see_behind(self):
+#         return self.is_open
+#
+#     def toggle(self, env, pos):
+#         # If the player has the right key to open the door
+#         if self.is_locked:
+#             if isinstance(env.carrying, Key) and env.carrying.color == self.color:
+#                 self.is_locked = False
+#                 self.is_open = True
+#                 return True
+#             return False
+#
+#         self.is_open = not self.is_open
+#         return True
+#
+#     def render(self, r):
+#         c = COLORS[self.color]
+#         r.setLineColor(c[0], c[1], c[2])
+#         r.setColor(c[0], c[1], c[2], 50 if self.is_locked else 0)
+#
+#         if self.is_open:
+#             r.drawPolygon([
+#                 (CELL_PIXELS-2, CELL_PIXELS),
+#                 (CELL_PIXELS  , CELL_PIXELS),
+#                 (CELL_PIXELS  ,           0),
+#                 (CELL_PIXELS-2,           0)
+#             ])
+#             return
+#
+#         r.drawPolygon([
+#             (0          , CELL_PIXELS),
+#             (CELL_PIXELS, CELL_PIXELS),
+#             (CELL_PIXELS,           0),
+#             (0          ,           0)
+#         ])
+#         r.drawPolygon([
+#             (2            , CELL_PIXELS-2),
+#             (CELL_PIXELS-2, CELL_PIXELS-2),
+#             (CELL_PIXELS-2,           2),
+#             (2            ,           2)
+#         ])
+#
+#         if self.is_locked:
+#             # Draw key slot
+#             r.drawLine(
+#                 CELL_PIXELS * 0.55,
+#                 CELL_PIXELS * 0.5,
+#                 CELL_PIXELS * 0.75,
+#                 CELL_PIXELS * 0.5
+#             )
+#         else:
+#             # Draw door handle
+#             r.drawCircle(CELL_PIXELS * 0.75, CELL_PIXELS * 0.5, 2)
+#
+# class Key(WorldObj):
+#     def __init__(self, color='blue'):
+#         super(Key, self).__init__('key', color)
+#
+#     def can_pickup(self):
+#         return True
+#
+#     def render(self, r):
+#         self._set_color(r)
+#
+#         # Vertical quad
+#         r.drawPolygon([
+#             (16, 10),
+#             (20, 10),
+#             (20, 28),
+#             (16, 28)
+#         ])
+#
+#         # Teeth
+#         r.drawPolygon([
+#             (12, 19),
+#             (16, 19),
+#             (16, 21),
+#             (12, 21)
+#         ])
+#         r.drawPolygon([
+#             (12, 26),
+#             (16, 26),
+#             (16, 28),
+#             (12, 28)
+#         ])
+#
+#         r.drawCircle(18, 9, 6)
+#         r.setLineColor(0, 0, 0)
+#         r.setColor(0, 0, 0)
+#         r.drawCircle(18, 9, 2)
 
-    def can_overlap(self):
-        """The agent can only walk over this cell when the door is open"""
-        return self.is_open
-
-    def see_behind(self):
-        return self.is_open
-
-    def toggle(self, env, pos):
-        # If the player has the right key to open the door
-        if self.is_locked:
-            if isinstance(env.carrying, Key) and env.carrying.color == self.color:
-                self.is_locked = False
-                self.is_open = True
-                return True
-            return False
-
-        self.is_open = not self.is_open
-        return True
-
-    def render(self, r):
-        c = COLORS[self.color]
-        r.setLineColor(c[0], c[1], c[2])
-        r.setColor(c[0], c[1], c[2], 50 if self.is_locked else 0)
-
-        if self.is_open:
-            r.drawPolygon([
-                (CELL_PIXELS-2, CELL_PIXELS),
-                (CELL_PIXELS  , CELL_PIXELS),
-                (CELL_PIXELS  ,           0),
-                (CELL_PIXELS-2,           0)
-            ])
-            return
-
-        r.drawPolygon([
-            (0          , CELL_PIXELS),
-            (CELL_PIXELS, CELL_PIXELS),
-            (CELL_PIXELS,           0),
-            (0          ,           0)
-        ])
-        r.drawPolygon([
-            (2            , CELL_PIXELS-2),
-            (CELL_PIXELS-2, CELL_PIXELS-2),
-            (CELL_PIXELS-2,           2),
-            (2            ,           2)
-        ])
-
-        if self.is_locked:
-            # Draw key slot
-            r.drawLine(
-                CELL_PIXELS * 0.55,
-                CELL_PIXELS * 0.5,
-                CELL_PIXELS * 0.75,
-                CELL_PIXELS * 0.5
-            )
-        else:
-            # Draw door handle
-            r.drawCircle(CELL_PIXELS * 0.75, CELL_PIXELS * 0.5, 2)
-
-class Key(WorldObj):
-    def __init__(self, color='blue'):
-        super(Key, self).__init__('key', color)
-
-    def can_pickup(self):
-        return True
-
-    def render(self, r):
-        self._set_color(r)
-
-        # Vertical quad
-        r.drawPolygon([
-            (16, 10),
-            (20, 10),
-            (20, 28),
-            (16, 28)
-        ])
-
-        # Teeth
-        r.drawPolygon([
-            (12, 19),
-            (16, 19),
-            (16, 21),
-            (12, 21)
-        ])
-        r.drawPolygon([
-            (12, 26),
-            (16, 26),
-            (16, 28),
-            (12, 28)
-        ])
-
-        r.drawCircle(18, 9, 6)
-        r.setLineColor(0, 0, 0)
-        r.setColor(0, 0, 0)
-        r.drawCircle(18, 9, 2)
-
-class Ball(WorldObj):
-    def __init__(self, color='blue'):
-        super(Ball, self).__init__('ball', color)
-
-    def can_pickup(self):
-        return True
-
-    def render(self, r):
-        self._set_color(r)
-        r.drawCircle(CELL_PIXELS * 0.5, CELL_PIXELS * 0.5, 10)
-
-class Box(WorldObj):
-    def __init__(self, color, contains=None):
-        super(Box, self).__init__('box', color)
-        self.contains = contains
-
-    def can_pickup(self):
-        return True
-
-    def render(self, r):
-        c = COLORS[self.color]
-        r.setLineColor(c[0], c[1], c[2])
-        r.setColor(0, 0, 0)
-        r.setLineWidth(2)
-
-        r.drawPolygon([
-            (4            , CELL_PIXELS-4),
-            (CELL_PIXELS-4, CELL_PIXELS-4),
-            (CELL_PIXELS-4,             4),
-            (4            ,             4)
-        ])
-
-        r.drawLine(
-            4,
-            CELL_PIXELS / 2,
-            CELL_PIXELS - 4,
-            CELL_PIXELS / 2
-        )
-
-        r.setLineWidth(1)
-
-    def toggle(self, env, pos):
-        # Replace the box by its contents
-        env.grid.set(*pos, self.contains)
-        return True
+# class Ball(WorldObj):
+#     def __init__(self, color='blue'):
+#         super(Ball, self).__init__('ball', color)
+#
+#     def can_pickup(self):
+#         return True
+#
+#     def render(self, r):
+#         self._set_color(r)
+#         r.drawCircle(CELL_PIXELS * 0.5, CELL_PIXELS * 0.5, 10)
+#
+# class Box(WorldObj):
+#     def __init__(self, color, contains=None):
+#         super(Box, self).__init__('box', color)
+#         self.contains = contains
+#
+#     def can_pickup(self):
+#         return True
+#
+#     def render(self, r):
+#         c = COLORS[self.color]
+#         r.setLineColor(c[0], c[1], c[2])
+#         r.setColor(0, 0, 0)
+#         r.setLineWidth(2)
+#
+#         r.drawPolygon([
+#             (4            , CELL_PIXELS-4),
+#             (CELL_PIXELS-4, CELL_PIXELS-4),
+#             (CELL_PIXELS-4,             4),
+#             (4            ,             4)
+#         ])
+#
+#         r.drawLine(
+#             4,
+#             CELL_PIXELS / 2,
+#             CELL_PIXELS - 4,
+#             CELL_PIXELS / 2
+#         )
+#
+#         r.setLineWidth(1)
+#
+#     def toggle(self, env, pos):
+#         # Replace the box by its contents
+#         env.grid.set(*pos, self.contains)
+#         return True
 
 class Grid:
     """
@@ -643,19 +643,21 @@ class MiniGridEnv(gym.Env):
     # Enumeration of possible actions
     class Actions(IntEnum):
         # Turn left, turn right, move forward
+        #go left, up, right down
         left = 0
         right = 1
-        forward = 2
+        up = 2
+        down = 3
 
-        # Pick up an object
-        pickup = 3
-        # Drop an object
-        drop = 4
-        # Toggle/activate an object
-        toggle = 5
+        # # Pick up an object
+        # pickup = 3
+        # # Drop an object
+        # drop = 4
+        # # Toggle/activate an object
+        # toggle = 5
 
         # Done completing task
-        done = 6
+        done = 4
 
     def __init__(
         self,
@@ -693,7 +695,7 @@ class MiniGridEnv(gym.Env):
         self.observation_space = spaces.Dict({
             'image': self.observation_space
         })
-
+        # Change to (-1,1) ? neeed negative reward
         # Range of possible rewards
         self.reward_range = (0, 1)
 
@@ -711,7 +713,7 @@ class MiniGridEnv(gym.Env):
 
         # Current position and direction of the agent
         self.agent_pos = None
-        self.agent_dir = None
+        # self.agent_dir = None
 
         # Initialize the RNG
         self.seed(seed=seed)
@@ -722,7 +724,7 @@ class MiniGridEnv(gym.Env):
     def reset(self):
         # Current position and direction of the agent
         self.agent_pos = None
-        self.agent_dir = None
+        # self.agent_dir = None
 
         # Generate a new random grid at the start of each episode
         # To keep the same grid for each episode, call env.seed() with
@@ -731,7 +733,7 @@ class MiniGridEnv(gym.Env):
 
         # These fields should be defined by _gen_grid
         assert self.agent_pos is not None
-        assert self.agent_dir is not None
+        # assert self.agent_dir is not None
 
         # Check that the agent doesn't overlap with an object
         start_cell = self.grid.get(*self.agent_pos)
@@ -779,17 +781,18 @@ class MiniGridEnv(gym.Env):
         OPENDED_DOOR_IDS = '_'
 
         # Map agent's direction to short string
-        AGENT_DIR_TO_STR = {
-            0: '>',
-            1: 'V',
-            2: '<',
-            3: '^'
-        }
+        #no need for directions
+        # AGENT_DIR_TO_STR = {
+        #     0: '>',
+        #     1: 'V',
+        #     2: '<',
+        #     3: '^'
+        # }
 
         str = ''
 
         for j in range(self.grid.height):
-
+            #i don't know what this does, how do i replace the agent_dir string portion here?
             for i in range(self.grid.width):
                 if i == self.agent_pos[0] and j == self.agent_pos[1]:
                     str += 2 * AGENT_DIR_TO_STR[self.agent_dir]
@@ -824,6 +827,7 @@ class MiniGridEnv(gym.Env):
         """
         Compute the reward to be given upon success
         """
+        #need to change reward from giving out reward at end goal(removed) to giving rewards at every step?
 
         return 1 - 0.9 * (self.step_count / self.max_steps)
 
@@ -966,11 +970,11 @@ class MiniGridEnv(gym.Env):
         pos = self.place_obj(None, top, size, max_tries=max_tries)
         self.agent_pos = pos
 
-        if rand_dir:
-            self.agent_dir = self._rand_int(0, 4)
+        # if rand_dir:
+        #     self.agent_dir = self._rand_int(0, 4)
 
         return pos
-
+    # Not sure if i need to keep this since removing direction
     @property
     def dir_vec(self):
         """
@@ -990,13 +994,45 @@ class MiniGridEnv(gym.Env):
         dx, dy = self.dir_vec
         return np.array((-dy, dx))
 
+    # @property
+    # def front_pos(self):
+    #     """
+    #     Get the position of the cell that is right in front of the agent
+    #     """
+    #
+    #     return self.agent_pos + self.dir_vec
+
     @property
-    def front_pos(self):
+    def right_pos(self):
         """
         Get the position of the cell that is right in front of the agent
         """
 
-        return self.agent_pos + self.dir_vec
+        return self.agent_pos + np.array((1, 0))
+
+    @property
+    def down_pos(self):
+        """
+        Get the position of the cell that is right in front of the agent
+        """
+
+        return self.agent_pos + np.array((0, 1))
+
+    @property
+    def left_pos(self):
+        """
+        Get the position of the cell that is right in front of the agent
+        """
+
+        return self.agent_pos + np.array((-1, 0))
+
+    @property
+    def up_pos(self):
+        """
+        Get the position of the cell that is right in front of the agent
+        """
+
+        return self.agent_pos + np.array((0, -1))
 
     def get_view_coords(self, i, j):
         """
@@ -1093,55 +1129,79 @@ class MiniGridEnv(gym.Env):
 
     def step(self, action):
         self.step_count += 1
-
+        #add reward here to check if square moved to is in unchecked squares?
         reward = 0
         done = False
 
-        # Get the position in front of the agent
-        fwd_pos = self.front_pos
+        # # Get the position in front of the agent
+        # fwd_pos = self.front_pos
+        #
+        # # Get the contents of the cell in front of the agent
+        # fwd_cell = self.grid.get(*fwd_pos)
 
-        # Get the contents of the cell in front of the agent
-        fwd_cell = self.grid.get(*fwd_pos)
+        #cell direction contents
+        left_pos = self.left_pos
+        left_cell = self.grid.get(*left_pos)
+        right_pos = self.right_pos
+        right_cell = self.grid.get(*right_pos)
+        up_pos = self.up_pos
+        up_cell = self.grid.get(*up_pos)
+        down_pos = self.down_pos
+        down_cell = self.grid.get(*down_pos)
 
-        # Rotate left
+        #move left
         if action == self.actions.left:
-            self.agent_dir -= 1
-            if self.agent_dir < 0:
-                self.agent_dir += 4
-
-        # Rotate right
+            if left_cell == None or left_cell.can_overlap():
+                self.agent_pos = left_pos
         elif action == self.actions.right:
-            self.agent_dir = (self.agent_dir + 1) % 4
+            if right_cell == None or right_cell.can_overlap():
+                self.agent_pos = right_pos
+        elif action == self.actions.up:
+            if up_cell == None or up_cell.can_overlap():
+                self.agent_pos = up_pos
+        elif action == self.actions.down:
+            if down_cell == None or down_cell.can_overlap():
+                self.agent_pos = down_pos
 
-        # Move forward
-        elif action == self.actions.forward:
-            if fwd_cell == None or fwd_cell.can_overlap():
-                self.agent_pos = fwd_pos
-            if fwd_cell != None and fwd_cell.type == 'goal':
-                done = True
-                reward = self._reward()
-            if fwd_cell != None and fwd_cell.type == 'lava':
-                done = True
+        # # Rotate left
+        # if action == self.actions.left:
+        #     self.agent_dir -= 1
+        #     if self.agent_dir < 0:
+        #         self.agent_dir += 4
+        #
+        # # Rotate right
+        # elif action == self.actions.right:
+        #     self.agent_dir = (self.agent_dir + 1) % 4
+        #
+        # # Move forward
+        # elif action == self.actions.forward:
+        #     if fwd_cell == None or fwd_cell.can_overlap():
+        #         self.agent_pos = fwd_pos
+        #     if fwd_cell != None and fwd_cell.type == 'goal':
+        #         done = True
+        #         reward = self._reward()
+        #     if fwd_cell != None and fwd_cell.type == 'lava':
+        #         done = True
 
-        # Pick up an object
-        elif action == self.actions.pickup:
-            if fwd_cell and fwd_cell.can_pickup():
-                if self.carrying is None:
-                    self.carrying = fwd_cell
-                    self.carrying.cur_pos = np.array([-1, -1])
-                    self.grid.set(*fwd_pos, None)
-
-        # Drop an object
-        elif action == self.actions.drop:
-            if not fwd_cell and self.carrying:
-                self.grid.set(*fwd_pos, self.carrying)
-                self.carrying.cur_pos = fwd_pos
-                self.carrying = None
-
-        # Toggle/activate an object
-        elif action == self.actions.toggle:
-            if fwd_cell:
-                fwd_cell.toggle(self, fwd_pos)
+        # # Pick up an object
+        # elif action == self.actions.pickup:
+        #     if fwd_cell and fwd_cell.can_pickup():
+        #         if self.carrying is None:
+        #             self.carrying = fwd_cell
+        #             self.carrying.cur_pos = np.array([-1, -1])
+        #             self.grid.set(*fwd_pos, None)
+        #
+        # # Drop an object
+        # elif action == self.actions.drop:
+        #     if not fwd_cell and self.carrying:
+        #         self.grid.set(*fwd_pos, self.carrying)
+        #         self.carrying.cur_pos = fwd_pos
+        #         self.carrying = None
+        #
+        # # Toggle/activate an object
+        # elif action == self.actions.toggle:
+        #     if fwd_cell:
+        #         fwd_cell.toggle(self, fwd_pos)
 
         # Done action (not used by default)
         elif action == self.actions.done:

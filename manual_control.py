@@ -49,8 +49,9 @@ def main():
         elif keyName == 'RIGHT':
             action = env.actions.right
         elif keyName == 'UP':
-            action = env.actions.forward
-
+            action = env.actions.up
+        elif keyName == 'DOWN':
+            action = env.actions.down
         elif keyName == 'SPACE':
             action = env.actions.toggle
         elif keyName == 'PAGE_UP':
