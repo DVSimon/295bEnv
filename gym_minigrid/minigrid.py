@@ -483,7 +483,7 @@ class MiniGridEnv(gym.Env):
         max_steps=100,
         see_through_walls=False,
         seed=1337,
-        agent_view_size=7
+        agent_view_size=3
     ):
         # Can't set both grid_size and width/height
         if grid_size:
@@ -1015,7 +1015,7 @@ class MiniGridEnv(gym.Env):
 
         topX, topY, botX, botY = self.get_view_exts()
 
-        grid = self.grid.slice(topX, topY, self.agent_view_size, self.agent_view_size)
+        grid = self.grid.slice(topX-1, topY, self.agent_view_size, self.agent_view_size)
 
         for i in range(self.agent_dir + 1):
             grid = grid.rotate_left()
@@ -1162,7 +1162,8 @@ class MiniGridEnv(gym.Env):
         # of the agent's view area
         f_vec = self.dir_vec
         r_vec = self.right_vec
-        top_left = self.agent_pos + f_vec * (self.agent_view_size-1) - r_vec * (self.agent_view_size // 2)
+        top_left = self.agent_pos + f_vec * (self.agent_view_size-1) - r_vec * (self.agent_view_size // 2) - [1, 0]
+        # print(top_left)
 
         # For each cell in the visibility mask
         if highlight:
