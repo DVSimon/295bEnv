@@ -108,10 +108,10 @@ class WorldObj:
 class Covered(WorldObj):
     def __init__(self):
         super().__init__('empty', None)
-    
+
     def can_overlap(self):
         return True
-    
+
     def render(self, r):
         self._set_color(r)
         r.drawPolygon([
@@ -227,7 +227,7 @@ class Grid:
             for j in range(1, self.height-1):
                 if self.grid[j* self.width + i] is None:
                     self.grid[j* self.width + i] = v
-            
+
     def get(self, i, j):
         assert i >= 0 and i < self.width
         assert j >= 0 and j < self.height
@@ -606,7 +606,7 @@ class MiniGridEnv(gym.Env):
             #i don't know what this does, how do i replace the agent_dir string portion here?
             for i in range(self.grid.width):
                 if i == self.agent_pos[0] and j == self.agent_pos[1]:
-                    str += 2 * AGENT_DIR_TO_STR[self.agent_dir]
+                    str += '  '
                     continue
 
                 c = self.grid.get(i, j)
@@ -614,15 +614,15 @@ class MiniGridEnv(gym.Env):
                 if c == None:
                     str += '  '
                     continue
-
-                if c.type == 'door':
-                    if c.is_open:
-                        str += '__'
-                    elif c.is_locked:
-                        str += 'L' + c.color[0].upper()
-                    else:
-                        str += 'D' + c.color[0].upper()
-                    continue
+                #
+                # if c.type == 'door':
+                #     if c.is_open:
+                #         str += '__'
+                #     elif c.is_locked:
+                #         str += 'L' + c.color[0].upper()
+                #     else:
+                #         str += 'D' + c.color[0].upper()
+                #     continue
 
                 str += OBJECT_TO_STR[c.type] + c.color[0].upper()
 
@@ -988,6 +988,12 @@ class MiniGridEnv(gym.Env):
         #determine reward
         reward = self._reward()
 
+        #grid string here
+        grid_str = self.__str__()
+        if 'U' not in grid_str:
+            done = True
+
+
         #set cell as covered
         self.grid.set(*self.agent_pos,None)
 
@@ -997,6 +1003,8 @@ class MiniGridEnv(gym.Env):
         obs = self.gen_obs()
 
         return obs, reward, done, {}
+
+        # return obs, reward, done, grid_str, {}
 
     def gen_obs_grid(self):
         """
