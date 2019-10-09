@@ -480,7 +480,7 @@ class MiniGridEnv(gym.Env):
         grid_size=None,
         width=None,
         height=None,
-        max_steps=100,
+        max_steps=1000,
         see_through_walls=False,
         seed=1337,
         agent_view_size=3
@@ -1008,8 +1008,8 @@ class MiniGridEnv(gym.Env):
         #set cell as covered
         self.grid.set(*self.agent_pos,None)
 
-        if self.step_count >= self.max_steps:
-            done = True
+        # if self.step_count >= self.max_steps:
+        #     done = True
 
         obs = self.gen_obs()
 

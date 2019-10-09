@@ -57,7 +57,7 @@ def main():
 
     #parameters
     episodes = 500
-    epsilon = 0.1
+    epsilon = 0.2
     alpha = 0.1
     gamma = 0.6
 
@@ -71,7 +71,7 @@ def main():
             # print('state = ')
             # print(state)
             renderer = env.render('human')
-            time.sleep(0.5)
+            time.sleep(0.1)
             if random.uniform(0, 1) < epsilon:
                 temp_action = env.action_space.sample() #explore
             else:
@@ -89,7 +89,7 @@ def main():
             # print(old_val)
             next_max = np.max(q_table[next_state])
             new_q_val = (1-alpha) * old_val + alpha * (reward + gamma + next_max)
-            print('reward=%.2f, new_q_val=%.2f, state=%i, action=%s' % (reward, new_q_val, state, action))
+            print('step=%s,reward=%.2f, new_q_val=%.2f, state=%i, action=%s' % (env.step_count, reward, new_q_val, state, action))
             q_table[state, temp_action] = new_q_val
 
             state = next_state
