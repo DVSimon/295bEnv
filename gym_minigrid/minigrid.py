@@ -494,23 +494,26 @@ class MiniGridEnv(gym.Env):
         # Action enumeration for this environment
         self.actions = MiniGridEnv.Actions
 
+        self.width = width
+
         # Actions are discrete integer values
-        self.action_space = spaces.Discrete(len(self.actions))
+        self.action_space = spaces.Discrete(len(self.actions)-1)
 
         # Number of cells (width and height) in the agent view
         self.agent_view_size = agent_view_size
 
         # Observations are dictionaries containing an
         # encoding of the grid and a textual 'mission' string
-        self.observation_space = spaces.Box(
-            low=0,
-            high=255,
-            shape=(self.agent_view_size, self.agent_view_size, 3),
-            dtype='uint8'
-        )
-        self.observation_space = spaces.Dict({
-            'image': self.observation_space
-        })
+        # self.observation_space = spaces.Box(
+        #     low=0,
+        #     high=255,
+        #     shape=(self.agent_view_size, self.agent_view_size, 3),
+        #     dtype='uint8'
+        # )
+        # self.observation_space = spaces.Dict({
+        #     'image': self.observation_space
+        # })
+        self.observation_space = spaces.Discrete((self.width-2)**2)
         # Change to (-1,1) ? neeed negative reward
         # Range of possible rewards
         self.reward_range = (-1, 1)
@@ -522,7 +525,7 @@ class MiniGridEnv(gym.Env):
         self.obs_render = None
 
         # Environment configuration
-        self.width = width
+        # self.width = width
         self.height = height
         self.max_steps = max_steps
         self.see_through_walls = see_through_walls
@@ -563,7 +566,7 @@ class MiniGridEnv(gym.Env):
 
         # Return first observation
         obs = self.gen_obs()
-        return obs
+        return self.agent_pos
 
     def seed(self, seed=1337):
         # Seed the random number generator
@@ -844,6 +847,10 @@ class MiniGridEnv(gym.Env):
         return self.agent_pos + np.array((-1, 0))
 
     @property
+    def get_agent_pos(self):
+        return self.agent_pos
+
+    @property
     def up_pos(self):
         """
         Get the position of the cell that is right in front of the agent
@@ -966,6 +973,7 @@ class MiniGridEnv(gym.Env):
         down_pos = self.down_pos
         down_cell = self.grid.get(*down_pos)
 
+
         #move left
         if action == self.actions.left:
             if left_cell == None or left_cell.can_overlap():
@@ -993,7 +1001,10 @@ class MiniGridEnv(gym.Env):
         if 'U' not in grid_str:
             done = True
 
-
+        #agent position
+        agent_position = self.get_agent_pos
+        agent_cell = self.grid.get(*agent_position)
+        grid_size = self.width - 2
         #set cell as covered
         self.grid.set(*self.agent_pos,None)
 
@@ -1002,7 +1013,7 @@ class MiniGridEnv(gym.Env):
 
         obs = self.gen_obs()
 
-        return obs, reward, done, {}
+        return obs, reward, done, agent_position, grid_size, {}
 
         # return obs, reward, done, grid_str, {}
 

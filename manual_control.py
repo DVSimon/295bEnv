@@ -3,7 +3,7 @@
 from __future__ import division, print_function
 
 import sys
-import numpy
+import numpy as np
 import gym
 import time
 from optparse import OptionParser
@@ -33,6 +33,15 @@ def main():
 
     # Create a window to render into
     renderer = env.render('human')
+
+    def table_conversion():
+        width = env.width - 2
+        pos_loc = []
+        # i = 0
+        # j = 0
+        for i in range(width):
+            pos_loc.append(np.arange(width*i, width*(i+1)))
+        return pos_loc
 
     def keyDownCb(keyName):
         if keyName == 'BACKSPACE':
@@ -66,10 +75,12 @@ def main():
             print("unknown key %s" % keyName)
             return
 
-        obs, reward, done, info = env.step(action)
+        table_locator = table_conversion()
+        obs, reward, done, agent_position, grid_size, info = env.step(action)
+        print(table_locator[agent_position[0]-1][agent_position[1]-1])
 
-        print('step=%s, reward=%.2f, obs=%s' % (env.step_count, reward,obs))
-
+        print('step=%s, reward=%.2f, position=%s' % (env.step_count, reward, agent_position))
+        print('obs_space=%s, action_space=%s, grid_size=%s' % (env.observation_space, env.action_space, grid_size))
         # obs, reward, done, grid_str, info = env.step(action)
         #
         # print('step=%s, reward=%.2f, string=%s' % (env.step_count, reward, grid_str))
