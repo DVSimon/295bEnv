@@ -42,6 +42,7 @@ class ActionBonus(gym.core.Wrapper):
         self.counts = {}
 
     def step(self, action):
+        print('wrappers step:')
         obs, reward, done, info = self.env.step(action)
 
         env = self.unwrapped
@@ -75,6 +76,7 @@ class StateBonus(gym.core.Wrapper):
         self.counts = {}
 
     def step(self, action):
+        print('statebonus step')
         obs, reward, done, info = self.env.step(action)
 
         # Tuple based on which we index the counts
@@ -155,6 +157,7 @@ class FullyObsWrapper(gym.core.ObservationWrapper):
         )
 
     def observation(self, obs):
+        print('FullyObsWrapper obs')
         env = self.unwrapped
         full_grid = env.grid.encode()
         full_grid[env.agent_pos[0]][env.agent_pos[1]] = np.array([
@@ -244,4 +247,5 @@ class AgentViewWrapper(gym.core.Wrapper):
         return self.env.reset(**kwargs)
 
     def step(self, action):
+        print('agentview step')
         return self.env.step(action)

@@ -30,54 +30,65 @@ def main():
             print('Mission: %s' % env.mission)
 
     resetEnv()
-
+    n_agents = env.getagents()
+    #print('agents are: ',n_agents)
+    
     # Create a window to render into
     renderer = env.render('human')
 
     def keyDownCb(keyName):
+        keyDownCb.num += 1
+        if keyDownCb.num == n_agents:
+            keyDownCb.num = 0
+
         if keyName == 'BACKSPACE':
             resetEnv()
+            keyDownCb.num = -1
             return
 
         if keyName == 'ESCAPE':
+            keyDownCb.num = -1
             sys.exit(0)
 
-        action = 0
+        # if keyDownCb.num == 0:
+        #     action = [None] * n_agents
 
         if keyName == 'LEFT':
-            action = env.actions.left
+            action[keyDownCb.num] = env.actions.left
         elif keyName == 'RIGHT':
-            action = env.actions.right
+            action[keyDownCb.num] = env.actions.right
         elif keyName == 'UP':
-            action = env.actions.up
+            action[keyDownCb.num] = env.actions.up
         elif keyName == 'DOWN':
-            action = env.actions.down
+            action[keyDownCb.num] = env.actions.down
         elif keyName == 'SPACE':
-            action = env.actions.toggle
+            action[keyDownCb.num] = env.actions.toggle
         elif keyName == 'PAGE_UP':
-            action = env.actions.pickup
+            action[keyDownCb.num] = env.actions.pickup
         elif keyName == 'PAGE_DOWN':
-            action = env.actions.drop
+            action[keyDownCb.num] = env.actions.drop
 
         elif keyName == 'RETURN':
-            action = env.actions.done
+            action[keyDownCb.num] = env.actions.done
 
         else:
             print("unknown key %s" % keyName)
+            keyDownCb.num = -1
             return
-
-        obs, reward, done, info = env.step(action)
-
-        print('step=%s, reward=%.2f' % (env.step_count, reward))
+        if keyDownCb.num == n_agents-1:
+            obs, reward, done, info = env.step(action)
+            print('step,reward=',env.step_count, reward)
 
         # obs, reward, done, grid_str, info = env.step(action)
         #
         # print('step=%s, reward=%.2f, string=%s' % (env.step_count, reward, grid_str))
 
-        if done:
-            print('done!')
-            resetEnv()
+            if done:
+                print('done!')
+                resetEnv()
 
+    keyDownCb.num = -1
+    action = [None] * n_agents
     renderer.window.setKeyDownCb(keyDownCb)
 
     while True:

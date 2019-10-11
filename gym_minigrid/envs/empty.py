@@ -1,5 +1,6 @@
 from gym_minigrid.minigrid import *
 from gym_minigrid.register import register
+import random
 
 class EmptyEnv(MiniGridEnv):
     """
@@ -23,6 +24,7 @@ class EmptyEnv(MiniGridEnv):
         )
 
     def _gen_grid(self, width, height):
+        print('empty')
         # Create an empty grid
         self.grid = Grid(width, height)
 
@@ -33,12 +35,21 @@ class EmptyEnv(MiniGridEnv):
         self.grid.setAll(Uncovered())
 
         # Place the agent
-        if self.agent_start_pos is not None:
-            self.agent_pos = self.agent_start_pos
-            self.grid.set(*self.agent_pos,None)
-            self.agent_dir = self.agent_start_dir
-        else:
-            self.place_agent()
+        print("empty1:w,h:",width,height)
+        #for i in range (8):
+        
+        #print('random1:',rw,rh)
+            
+        print("empty2:",self.agent_pos)
+        for i in range(len(self.agent_pos)):
+            xy = (random.randint(1,width-2),random.randint(1,height-2))
+            if xy not in self.agent_pos.values():   
+                print('empty3:not')
+                self.agent_pos[i] = xy
+                self.grid.set(*self.agent_pos[i],None)
+                self.agent_dir = self.agent_start_dir
+            else:
+                self.place_agent()
 
         self.mission = "Explore every grid space."
 
