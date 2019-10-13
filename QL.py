@@ -7,6 +7,7 @@ import random
 
 
 def main():
+    #parsing options for command line
     parser = OptionParser()
     parser.add_option(
         "-e",
@@ -19,13 +20,14 @@ def main():
 
     # Load the gym environment
     env = gym.make(options.env_name)
-
+    #function to reset the environment from manual control
     def resetEnv():
         env.reset()
         if hasattr(env, 'mission'):
             print('Mission: %s' % env.mission)
-
+    #function to convert action from numeric value to environmental directional actions
     def get_action(temp_action):
+        #initialize
         act = None
 
         if temp_action == 0:
@@ -39,9 +41,10 @@ def main():
         else:
             print("unknown key %s" % keyName)
             return
-
+        #return converted action
         return act
-
+    #function to assign state values from 2d array(positions on grid are mapped out in 2d(rows/columns)) to 1d for states
+    #e.g. 8x8 grid(2d array) mapped to equivalent states
     def table_conversion():
         width = env.width - 2
         pos_loc = []
@@ -51,27 +54,34 @@ def main():
             pos_loc.append(np.arange(width*i, width*(i+1)))
         return pos_loc
 
-
+    #reset environment initialliy
     resetEnv()
 
 
-    #parameters
-    episodes = 500
-    epsilon = 0.2
+    #parameters, can be adjusted
+    episodes = 500 #num episodes to run
+    epsilon = 0.2 #epsilon value for determining exploration vs exploitation
+    #learning rates
     alpha = 0.1
     gamma = 0.6
-
+    #initalize q table to be zeroes using the observation space x action space
     q_table = np.zeros([env.observation_space.n, env.action_space.n])
+    #get table conversion for future use
     table_locator = table_conversion()
     for i in range(episodes):
+        #get first state after env initialized
         temp_state = env.reset()
+        #convert state(grid position) to a 1d state value
         state = table_locator[temp_state[0]-1][temp_state[1]-1]
         while True:
             # print(q_table)
             # print('state = ')
             # print(state)
+            #render environment visually
             renderer = env.render('human')
-            time.sleep(0.1)
+            #time between actions
+            time.sleep(0.05)
+            #greed vs exploitation
             if random.uniform(0, 1) < epsilon:
                 temp_action = env.action_space.sample() #explore
             else:
@@ -80,18 +90,24 @@ def main():
                 temp_action = np.argmax(q_table[state]) #greedy
             # print(temp_action)
             # print(type(temp_action))
+            #convert chosen action from numeric to environment accepted directional action
             action = get_action(temp_action)
             # print(action)
+            #take step
             obs, reward, done, agent_position, grid_size, info = env.step(action)
             # print('reward=%.2f' % (reward))
+            # using the agents new position returned from the environment, convert from grid coordinates to table based state for next state
             next_state = table_locator[agent_position[0]-1][agent_position[1]-1]
             old_val = q_table[state, action]
             # print(old_val)
+            # get the new possible max at the next state for q table calculations
             next_max = np.max(q_table[next_state])
+            # calculate new q value for q table
             new_q_val = (1-alpha) * old_val + alpha * (reward + gamma + next_max)
             print('step=%s,reward=%.2f, new_q_val=%.2f, state=%i, action=%s' % (env.step_count, reward, new_q_val, state, action))
+            # replace q value in table with updated table
             q_table[state, temp_action] = new_q_val
-
+            # set current state to the next state for next iteration of steps
             state = next_state
             # time.sleep(1.5)
 
