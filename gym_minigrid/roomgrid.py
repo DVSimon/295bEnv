@@ -116,6 +116,7 @@ class RoomGrid(MiniGridEnv):
         return self.room_grid[j][i]
 
     def _gen_grid(self, width, height):
+        print('roomgrid')
         # Create the grid
         self.grid = Grid(width, height)
 
