@@ -25,6 +25,7 @@ def main():
     env = gym.make(options.env_name)
 
     def resetEnv():
+        env.seed()
         env.reset()
         if hasattr(env, 'mission'):
             print('Mission: %s' % env.mission)
@@ -80,8 +81,9 @@ def main():
         print(table_locator[agent_position[0]-1][agent_position[1]-1])
 
         print('step=%s, reward=%.2f, position=%s' % (env.step_count, reward, agent_position))
-        print('obs_space=%s, action_space=%s, grid_size=%s' % (env.observation_space, env.action_space, grid_size))
+        # print('obs_space=%s, action_space=%s, grid_size=%s' % (env.observation_space, env.action_space, grid_size))
         # obs, reward, done, grid_str, info = env.step(action)
+        print(obs)
         #
         # print('step=%s, reward=%.2f, string=%s' % (env.step_count, reward, grid_str))
 

@@ -46,16 +46,16 @@ OBJECT_TO_IDX = {
 IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))
 # we aren't using directions, need to change this to be just u, d , l , r w/o orientation?
 # Map of agent direction indices to vectors
-DIR_TO_VEC = [
-    # Pointing right (positive X)
-    np.array((1, 0)),
-    # Down (positive Y)
-    np.array((0, 1)),
-    # Pointing left (negative X)
-    np.array((-1, 0)),
-    # Up (negative Y)
-    np.array((0, -1)),
-]
+# DIR_TO_VEC = [
+#     # Pointing right (positive X)
+#     np.array((1, 0)),
+#     # Down (positive Y)
+#     np.array((0, 1)),
+#     # Pointing left (negative X)
+#     np.array((-1, 0)),
+#     # Up (negative Y)
+#     np.array((0, -1)),
+# ]
 
 class WorldObj:
     """
@@ -350,6 +350,7 @@ class Grid:
         for i in range(self.width):
             for j in range(self.height):
                 if vis_mask[i, j]:
+                    print(i,j)
                     v = self.get(i, j)
 
                     if v is None:
@@ -446,6 +447,21 @@ class Grid:
 
         return mask
 
+    def get_obs(self, pos):
+        # print(pos)
+        array = np.zeros((3, 3), dtype='uint8')
+        for j in range(0,3):
+            for i in range(0,3):
+                print(pos[0]-1+i, pos[1]-1+j,self.get(pos[0]-1+i, pos[1]-1+j))
+                if i==1 and j ==1:
+                    array[i,j] = 10
+                elif self.get(pos[0]-1+i, pos[1]-1+j) is None:
+                    array[i,j] = 1
+                else:
+                    array[i,j] = OBJECT_TO_IDX[self.get(pos[0]-1+i, pos[1]-1+j).type]
+
+        return array
+
 class MiniGridEnv(gym.Env):
     """
     2D grid world game environment
@@ -483,7 +499,7 @@ class MiniGridEnv(gym.Env):
         max_steps=1000,
         see_through_walls=False,
         seed=1337,
-        agent_view_size=3
+        agent_view_size=3,
     ):
         # Can't set both grid_size and width/height
         if grid_size:
@@ -535,6 +551,7 @@ class MiniGridEnv(gym.Env):
         # self.agent_dir = None
 
         # Initialize the RNG
+        self.seed_val = seed
         self.seed(seed=seed)
 
         # Initialize the state
@@ -795,24 +812,25 @@ class MiniGridEnv(gym.Env):
 
         return pos
     # Not sure if i need to keep this since removing direction
-    @property
-    def dir_vec(self):
-        """
-        Get the direction vector for the agent, pointing in the direction
-        of forward movement.
-        """
+    # @property
+    # def dir_vec(self):
+    #     """
+    #     Get the direction vector for the agent, pointing in the direction
+    #     of forward movement.
+    #     """
 
-        assert self.agent_dir >= 0 and self.agent_dir < 4
-        return DIR_TO_VEC[self.agent_dir]
+    #     assert self.agent_dir >= 0 and self.agent_dir < 4
+    #     print(DIR_TO_VEC[self.agent_dir])
+    #     return DIR_TO_VEC[self.agent_dir]
 
-    @property
-    def right_vec(self):
-        """
-        Get the vector pointing to the right of the agent.
-        """
+    # @property
+    # def right_vec(self):
+    #     """
+    #     Get the vector pointing to the right of the agent.
+    #     """
 
-        dx, dy = self.dir_vec
-        return np.array((-dy, dx))
+    #     # dx, dy = self.dir_vec
+    #     return np.array((0, 1))
 
     # @property
     # def front_pos(self):
@@ -866,8 +884,8 @@ class MiniGridEnv(gym.Env):
         """
 
         ax, ay = self.agent_pos
-        dx, dy = self.dir_vec
-        rx, ry = self.right_vec
+        dx, dy = np.array((1, 0))
+        rx, ry = np.array((0, 1))
 
         # Compute the absolute coordinates of the top-left view corner
         sz = self.agent_view_size
@@ -891,25 +909,28 @@ class MiniGridEnv(gym.Env):
         Note: the bottom extent indices are not included in the set
         """
 
-        # Facing right
-        if self.agent_dir == 0:
-            topX = self.agent_pos[0]
-            topY = self.agent_pos[1] - self.agent_view_size // 2
-        # Facing down
-        elif self.agent_dir == 1:
-            topX = self.agent_pos[0] - self.agent_view_size // 2
-            topY = self.agent_pos[1]
-        # Facing left
-        elif self.agent_dir == 2:
-            topX = self.agent_pos[0] - self.agent_view_size + 1
-            topY = self.agent_pos[1] - self.agent_view_size // 2
-        # Facing up
-        elif self.agent_dir == 3:
-            topX = self.agent_pos[0] - self.agent_view_size // 2
-            topY = self.agent_pos[1] - self.agent_view_size + 1
-        else:
-            assert False, "invalid agent direction"
+        # # Facing right
+        # if self.agent_dir == 0:
+        #     topX = self.agent_pos[0]
+        #     topY = self.agent_pos[1] - self.agent_view_size // 2
+        # # Facing down
+        # elif self.agent_dir == 1:
+        #     topX = self.agent_pos[0] - self.agent_view_size // 2
+        #     topY = self.agent_pos[1]
+        # # Facing left
+        # elif self.agent_dir == 2:
+        #     topX = self.agent_pos[0] - self.agent_view_size + 1
+        #     topY = self.agent_pos[1] - self.agent_view_size // 2
+        # # Facing up
+        # elif self.agent_dir == 3:
+        #     topX = self.agent_pos[0] - self.agent_view_size // 2
+        #     topY = self.agent_pos[1] - self.agent_view_size + 1
+        # else:
+        #     assert False, "invalid agent direction"
 
+        
+        topX = self.agent_pos[0]
+        topY = self.agent_pos[1] - self.agent_view_size // 2
         botX = topX + self.agent_view_size
         botY = topY + self.agent_view_size
 
@@ -1028,8 +1049,8 @@ class MiniGridEnv(gym.Env):
 
         grid = self.grid.slice(topX-1, topY, self.agent_view_size, self.agent_view_size)
 
-        for i in range(self.agent_dir + 1):
-            grid = grid.rotate_left()
+        # for i in range(self.agent_dir + 1):
+        #     grid = grid.rotate_left()
 
         # Process occluders and visibility
         # Note that this incurs some performance cost
@@ -1041,11 +1062,11 @@ class MiniGridEnv(gym.Env):
         # Make it so the agent sees what it's carrying
         # We do this by placing the carried object at the agent's position
         # in the agent's partially observable view
-        agent_pos = grid.width // 2, grid.height - 1
-        if self.carrying:
-            grid.set(*agent_pos, self.carrying)
-        else:
-            grid.set(*agent_pos, None)
+        # agent_pos = grid.width // 2, grid.height - 1
+        # if self.carrying:
+        #     grid.set(*agent_pos, self.carrying)
+        # else:
+        #     grid.set(*agent_pos, None)
 
         return grid, vis_mask
 
@@ -1054,12 +1075,13 @@ class MiniGridEnv(gym.Env):
         Generate the agent's view (partially observable, low-resolution encoding)
         """
 
-        grid, vis_mask = self.gen_obs_grid()
+        # grid, vis_mask = self.gen_obs_grid()
 
         # Encode the partially observable view into a numpy array
-        image = grid.encode(vis_mask)
+        # image = grid.encode(vis_mask)
+        image = self.grid.get_obs(self.agent_pos)
 
-        assert hasattr(self, 'mission'), "environments must define a textual mission string"
+        # assert hasattr(self, 'mission'), "environments must define a textual mission string"
 
         # Observations are dictionaries containing:
         # - an image (partially observable view of the environment)
@@ -1067,8 +1089,8 @@ class MiniGridEnv(gym.Env):
         # - a textual mission string (instructions for the agent)
         obs = {
             'image': image,
-            'direction': self.agent_dir,
-            'mission': self.mission
+            # 'direction': self.agent_dir,
+            # 'mission': self.mission
         }
 
         return obs
@@ -1140,8 +1162,8 @@ class MiniGridEnv(gym.Env):
 
         r = self.grid_render
 
-        if r.window:
-            r.window.setText(self.mission)
+        # if r.window:
+        #     r.window.setText(self.mission)
 
         r.beginFrame()
 
@@ -1156,14 +1178,15 @@ class MiniGridEnv(gym.Env):
             CELL_PIXELS * (self.agent_pos[0] + 0.5),
             CELL_PIXELS * (self.agent_pos[1] + 0.5)
         )
-        r.rotate(self.agent_dir * 90)
+        # r.rotate(self.agent_dir * 90)
         r.setLineColor(255, 0, 0)
         r.setColor(255, 0, 0)
-        r.drawPolygon([
-            (-12, 10),
-            ( 12,  0),
-            (-12, -10)
-        ])
+        # r.drawPolygon([
+        #     (-12, 10),
+        #     ( 12,  0),
+        #     (-12, -10)
+        # ])
+        r.drawCircle(0,0,10)
         r.pop()
 
         # Compute which cells are visible to the agent
@@ -1171,9 +1194,9 @@ class MiniGridEnv(gym.Env):
 
         # Compute the absolute coordinates of the bottom-left corner
         # of the agent's view area
-        f_vec = self.dir_vec
-        r_vec = self.right_vec
-        top_left = self.agent_pos + f_vec * (self.agent_view_size-1) - r_vec * (self.agent_view_size // 2) - [1, 0]
+        f_vec = np.array((1, 0))
+        r_vec = np.array((0, 1))
+        top_left = self.agent_pos + f_vec * (self.agent_view_size-1) - r_vec * (self.agent_view_size // 2) - np.array((1, 0))
         # print(top_left)
 
         # For each cell in the visibility mask

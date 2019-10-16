@@ -1,5 +1,6 @@
 from gym_minigrid.minigrid import *
 from gym_minigrid.register import register
+import numpy as np
 
 class EmptyEnv(MiniGridEnv):
     """
@@ -11,9 +12,11 @@ class EmptyEnv(MiniGridEnv):
         size=8,
         agent_start_pos=(1,1),
         agent_start_dir=0,
+        obstacles=3,
     ):
         self.agent_start_pos = agent_start_pos
         self.agent_start_dir = agent_start_dir
+        self.obstacles = obstacles
 
         super().__init__(
             grid_size=size,
@@ -23,11 +26,26 @@ class EmptyEnv(MiniGridEnv):
         )
 
     def _gen_grid(self, width, height):
+        # Set Seed
+        self.np_random, _ = seeding.np_random(self.seed_val)
+
         # Create an empty grid
         self.grid = Grid(width, height)
 
         # Generate the surrounding walls
         self.grid.wall_rect(0, 0, width, height)
+
+        # Generate obstacles
+        for _ in range(self.obstacles):
+            while True:
+                x = self.np_random.randint(1,width-1)
+                y = self.np_random.randint(1,height-1)
+
+                if (x,y) != self.agent_start_pos and self.grid.get(x,y) is None:
+                    break
+            
+            self.grid.set(x,y,Wall())
+            
         
         #Set all non-agent squares as uncovered
         self.grid.setAll(Uncovered())
@@ -40,7 +58,7 @@ class EmptyEnv(MiniGridEnv):
         else:
             self.place_agent()
 
-        self.mission = "Explore every grid space."
+        # self.mission = "Explore every grid space."
 
 class EmptyEnv5x5(EmptyEnv):
     def __init__(self):

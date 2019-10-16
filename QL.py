@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import gym
 import gym_minigrid
 import numpy as np
@@ -21,6 +23,7 @@ def main():
     env = gym.make(options.env_name)
 
     def resetEnv():
+        env.seed()
         env.reset()
         if hasattr(env, 'mission'):
             print('Mission: %s' % env.mission)
@@ -58,6 +61,7 @@ def main():
     #parameters
     episodes = 500
     epsilon = 0.2
+    decay = .99
     alpha = 0.1
     gamma = 0.6
 
