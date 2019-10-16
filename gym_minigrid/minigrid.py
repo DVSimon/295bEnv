@@ -14,7 +14,7 @@ CELL_PIXELS = 32
 # Map of color names to RGB values
 COLORS = {
     'red'   : np.array([255, 0, 0]),
-    'green' : np.array([0, 255, 0]),
+    'green' : np.array([0, 153, 0]),
     'blue'  : np.array([0, 0, 255]),
     'purple': np.array([112, 39, 195]),
     'yellow': np.array([255, 255, 0]),
@@ -481,14 +481,14 @@ class Grid:
         return mask
 
     def get_obs(self, pos):
-        print(pos)
+        # print(pos)
         arrays = {  0:np.zeros((3, 3), dtype='uint8'),
                     1: np.zeros((3, 3), dtype='uint8')}
 
         for key,val in pos.items():
             for j in range(0,3):
                 for i in range(0,3):
-                    print(val[0]-1+i, val[1]-1+j,self.get(val[0]-1+i, val[1]-1+j))
+                    # print(val[0]-1+i, val[1]-1+j,self.get(val[0]-1+i, val[1]-1+j))
                     if i==1 and j ==1:
                         arrays[key][i,j] = 10
                     elif self.get(val[0]-1+i, val[1]-1+j) is None:
@@ -535,7 +535,7 @@ class MiniGridEnv(gym.Env):
         n_agents=2,
         max_steps=100,
         see_through_walls=False,
-        seed=1337,
+        seed=23,
         agent_view_size=3,
     ):
         print("---init called")
@@ -647,7 +647,7 @@ class MiniGridEnv(gym.Env):
         #print('reset3:pos:',self.agents.agent_pos)
         # Return first observation
         obs = self.gen_obs()
-        return self.agents.agent_pos
+        return self.agents
 
     def seed(self, seed=1337):
         # Seed the random number generator
@@ -856,10 +856,9 @@ class MiniGridEnv(gym.Env):
                 continue
 
             # Don't place the object where the agent is
-            for i in range(len(self.agent_pos)):    
-                if np.array_equal(pos, self.agent_pos[i]):
+            for i in range(len(self.agents.agent_pos)):    
+                if np.array_equal(pos, self.agents.agent_pos[i]):
                     continue
-                #continue
             # Check if there is a filtering criterion
             if reject_fn and reject_fn(self, pos):
                 continue
@@ -1073,6 +1072,7 @@ class MiniGridEnv(gym.Env):
         return obs_cell is not None and obs_cell.type == world_cell.type
 
     def step(self, action):
+        print(action)
         self.step_count += 1
         #add reward here to check if square moved to is in unchecked squares?
         reward = [None] * self.agents.n_agents
@@ -1117,7 +1117,7 @@ class MiniGridEnv(gym.Env):
         #for i in range(len(action)):
             #print("position actions: ",i,left_pos[i], right_pos[i], up_pos[i], down_pos[i])
             #print("agents ===>", self.agents.agent_pos)
-            print("before=====>",i, self.agents.agent_pos.values())
+            # print("before=====>",i, self.agents.agent_pos.values())
             if action[i] == self.actions.left:
                 if (left_cell[i] == None or left_cell[i].can_overlap()) and tuple(left_pos[i]) not in self.agents.agent_pos.values():
                     self.agents.agent_pos[i] = tuple(left_pos[i])                    
@@ -1135,7 +1135,7 @@ class MiniGridEnv(gym.Env):
                 pass
             else:
                 assert False, "unknown action"
-            print("after=====>",i, self.agents.agent_pos.values())    
+            # print("after=====>",i, self.agents.agent_pos.values())    
 
         #determine reward
         reward = self._reward()
@@ -1158,7 +1158,7 @@ class MiniGridEnv(gym.Env):
 
         obs = self.gen_obs()
 
-        return obs, reward, done, {}
+        return obs, reward, done, self.agents, {}
 
         # return obs, reward, done, grid_str, {}
 
@@ -1314,8 +1314,8 @@ class MiniGridEnv(gym.Env):
                 CELL_PIXELS * (self.agents.agent_pos[i][1] + 0.5)
             )
             r.rotate(self.agent_dir * 90)
-            r.setLineColor(255, 0, 0)
-            r.setColor(255, 0, 0)
+            r.setLineColor(0, 0, 0)
+            r.setColor(51, 153, 255)
             # r.drawPolygon([
             #     (-12, 10),
             #     ( 12,  0),
@@ -1323,10 +1323,6 @@ class MiniGridEnv(gym.Env):
             # ])
             r.drawCircle(0,0,10)
             r.pop()
-
-
-
-        
 
         # Compute which cells are visible to the agent
         _, vis_mask = self.gen_obs_grid()
