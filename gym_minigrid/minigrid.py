@@ -533,25 +533,26 @@ class MiniGridEnv(gym.Env):
         # Action enumeration for this environment
         self.actions = MiniGridEnv.Actions
 
-        # (ma.)Actions are discrete integer values
-        #self.action_space = MultiAgentActionSpace(
-        #    [spaces.Discrete(len(self.actions)) for _ in range(self.n_agents)])
-        #self.action_space = spaces.Discrete(len(self.actions))
+        self.width = width
+
+        # Actions are discrete integer values
+        self.action_space = spaces.Discrete(len(self.actions)-1)
 
         # Number of cells (width and height) in the agent view
         self.agent_view_size = agent_view_size
 
         # Observations are dictionaries containing an
         # encoding of the grid and a textual 'mission' string
-        self.observation_space = spaces.Box(
-            low=0,
-            high=255,
-            shape=(self.agent_view_size, self.agent_view_size, 3),
-            dtype='uint8'
-        )
-        self.observation_space = spaces.Dict({
-            'image': self.observation_space
-        })
+        # self.observation_space = spaces.Box(
+        #     low=0,
+        #     high=255,
+        #     shape=(self.agent_view_size, self.agent_view_size, 3),
+        #     dtype='uint8'
+        # )
+        # self.observation_space = spaces.Dict({
+        #     'image': self.observation_space
+        # })
+        self.observation_space = spaces.Discrete((self.width-2)**2)
         # Change to (-1,1) ? neeed negative reward
         # Range of possible rewards
         self.reward_range = (-1, 1)
@@ -563,7 +564,7 @@ class MiniGridEnv(gym.Env):
         self.obs_render = None
 
         # Environment configuration
-        self.width = width
+        # self.width = width
         self.height = height
         self.max_steps = max_steps
         self.see_through_walls = see_through_walls
@@ -626,8 +627,7 @@ class MiniGridEnv(gym.Env):
         #print('reset3:pos:',self.agents.agent_pos)
         # Return first observation
         obs = self.gen_obs()
-        #print("reset4:pos:",self.agents.agent_pos)
-        return obs
+        return self.agents.agent_pos
 
     def seed(self, seed=1337):
         # Seed the random number generator
@@ -933,6 +933,10 @@ class MiniGridEnv(gym.Env):
         return x   
         #return self.agent_pos + np.array((-1, 0))
 
+    # @property
+    # def get_agent_pos(self):
+    #     return self.agent_pos 
+
     @property
     def up_pos(self):
         """
@@ -1087,6 +1091,7 @@ class MiniGridEnv(gym.Env):
             up_cell[i] = self.grid.get(up_pos[i][0],up_pos[i][1])            
             down_cell[i] = self.grid.get(down_pos[i][0],down_pos[i][1])
 
+
         #move left
         #for i in range(len(action)):
             #print("position actions: ",i,left_pos[i], right_pos[i], up_pos[i], down_pos[i])
@@ -1119,13 +1124,16 @@ class MiniGridEnv(gym.Env):
         if 'U' not in grid_str:
             done = True
 
-
+        #agent position
+        agent_position = self.agents.agent_pos
+        agent_cell = self.grid.get(*agent_position)
+        grid_size = self.width - 2
         #set cell as covered
         for i in range(self.agents.n_agents):
             self.grid.set(self.agents.agent_pos[i][0],self.agents.agent_pos[i][1],None)
 
-            if self.step_count >= self.max_steps:
-                done = True
+        # if self.step_count >= self.max_steps:
+        #     done = True
 
         obs = self.gen_obs()
 
@@ -1142,9 +1150,10 @@ class MiniGridEnv(gym.Env):
         """
         #print("genobsgrid: ",self.agent_pos)
         topX, topY, botX, botY = self.get_view_exts()
+        print('--',topX)
 
         grid = self.grid.slice(topX, topY, self.agent_view_size, self.agent_view_size)
-        #print('gen_obs_grid:grid',grid)
+
         for i in range(self.agent_dir + 1):
             grid = grid.rotate_left()
 
