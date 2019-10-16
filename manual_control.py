@@ -17,7 +17,6 @@ def main():
         "--env-name",
         dest="env_name",
         help="gym environment to load",
-        #default='MiniGrid-MultiRoom-N6-v0'
         default='MiniGrid-Empty-8x8-v0'
     )
     (options, args) = parser.parse_args()
@@ -28,12 +27,9 @@ def main():
     def resetEnv():
         env.seed()
         env.reset()
-        if hasattr(env, 'mission'):
-            print('Mission: %s' % env.mission)
 
     resetEnv()
     n_agents = env.agents.n_agents
-    #print('agents are: ',n_agents)
     
     # Create a window to render into
     renderer = env.render('human')
@@ -41,8 +37,7 @@ def main():
     def table_conversion():
         width = env.width - 2
         pos_loc = []
-        # i = 0
-        # j = 0
+       
         for i in range(width):
             pos_loc.append(np.arange(width*i, width*(i+1)))
         return pos_loc
@@ -60,9 +55,6 @@ def main():
         if keyName == 'ESCAPE':
             keyDownCb.num = -1
             sys.exit(0)
-
-        # if keyDownCb.num == 0:
-        #     action = [None] * n_agents
 
         if keyName == 'LEFT':
             action[keyDownCb.num] = env.actions.left

@@ -2,11 +2,12 @@
 
 import gym
 import gym_minigrid
+from gym_minigrid.plot import Plotter
 import numpy as np
 import time
 from optparse import OptionParser
 import random
-
+import matplotlib.pyplot as plt
 
 def main():
     parser = OptionParser()
@@ -25,8 +26,6 @@ def main():
     def resetEnv():
         env.seed()
         env.reset()
-        # if hasattr(env, 'mission'):
-        #     print('Mission: %s' % env.mission)
 
     # Convert action from numeric value to environmental directional actions
     def get_action(temp_action):
@@ -41,7 +40,7 @@ def main():
         elif temp_action == 3:
             act = env.actions.down
         else:
-            print("unknown key %s" % keyName)
+            print("unknown key")
             return
 
         return act
@@ -56,6 +55,8 @@ def main():
             pos_loc.append(np.arange(width*i, width*(i+1)))
         return pos_loc
 
+    plotter = Plotter()
+
     # Initialize environment
     resetEnv()
 
@@ -66,11 +67,14 @@ def main():
     alpha = 0.1
     gamma = 0.6
 
+    # metrics
+    steps_to_complete = []
+
     # Initalize q-table [observation space x action space]
     q_table = np.zeros([env.observation_space.n, env.action_space.n])
     table_locator = table_conversion()
 
-    for _ in range(episodes):
+    for e in range(episodes):
         # Calculate new epsilon-decay value -- decays with each new episode
         epsilon = epsilon*decay
 
@@ -85,7 +89,7 @@ def main():
         while True:
             renderer = env.render('human')
 
-            time.sleep(0.05)
+            # time.sleep(0.05)
 
             # Determine whether to explore or exploit for all agents during current step
             if random.uniform(0, 1) < epsilon:
@@ -127,6 +131,10 @@ def main():
             # time.sleep(1.5)
 
             if done:
+                # plot steps by episode
+                steps_to_complete.append(env.step_count)
+                plotter.plot_steps(steps_to_complete, '-lr')
+
                 print('done!')
                 print(q_table)
                 break

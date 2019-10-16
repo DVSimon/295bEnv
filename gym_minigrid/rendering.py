@@ -20,9 +20,9 @@ class Window(QMainWindow):
         self.imgLabel.setFrameStyle(QFrame.Panel | QFrame.Sunken)
 
         # Text box for the mission
-        self.missionBox = QTextEdit()
-        self.missionBox.setReadOnly(True)
-        self.missionBox.setMinimumSize(400, 100)
+        # self.missionBox = QTextEdit()
+        # self.missionBox.setReadOnly(True)
+        # self.missionBox.setMinimumSize(400, 100)
 
         # Center the image
         hbox = QHBoxLayout()
@@ -33,7 +33,7 @@ class Window(QMainWindow):
         # Arrange widgets vertically
         vbox = QVBoxLayout()
         vbox.addLayout(hbox)
-        vbox.addWidget(self.missionBox)
+        # vbox.addWidget(self.missionBox)
 
         # Create a main widget for the window
         mainWidget = QWidget(self)

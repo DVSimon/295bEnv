@@ -481,11 +481,12 @@ class Grid:
         return mask
 
     def get_obs(self, pos):
-        # print(pos)
-        arrays = {  0:np.zeros((3, 3), dtype='uint8'),
-                    1: np.zeros((3, 3), dtype='uint8')}
+        arrays = {}
 
+        # print(pos)
         for key,val in pos.items():
+            arrays[key] = np.zeros((3, 3), dtype='uint8')
+
             for j in range(0,3):
                 for i in range(0,3):
                     # print(val[0]-1+i, val[1]-1+j,self.get(val[0]-1+i, val[1]-1+j))
@@ -532,7 +533,7 @@ class MiniGridEnv(gym.Env):
         grid_size=None,
         width=None,
         height=None,
-        n_agents=2,
+        n_agents=3,
         max_steps=100,
         see_through_walls=False,
         seed=23,
@@ -1072,7 +1073,7 @@ class MiniGridEnv(gym.Env):
         return obs_cell is not None and obs_cell.type == world_cell.type
 
     def step(self, action):
-        print(action)
+        # print(action)
         self.step_count += 1
         #add reward here to check if square moved to is in unchecked squares?
         reward = [None] * self.agents.n_agents
@@ -1146,9 +1147,10 @@ class MiniGridEnv(gym.Env):
             done = True
 
         #agent position
-        agent_position = self.agents.agent_pos
-        agent_cell = self.grid.get(*agent_position)
-        grid_size = self.width - 2
+        # agent_position = self.agents.agent_pos
+        # print(agent_position)
+        # agent_cell = self.grid.get(*agent_position)
+        # grid_size = self.width - 2
         #set cell as covered
         for i in range(self.agents.n_agents):
             self.grid.set(self.agents.agent_pos[i][0],self.agents.agent_pos[i][1],None)
