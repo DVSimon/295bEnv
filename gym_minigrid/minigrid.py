@@ -5,8 +5,8 @@ import numpy as np
 from gym import error, spaces, utils
 from gym.utils import seeding
 
-from gym_minigrid.action_space import MultiAgentActionSpace
-from gym_minigrid.observation_space import MultiAgentObservationSpace
+#from gym_minigrid.action_space import MultiAgentActionSpace
+#from gym_minigrid.observation_space import MultiAgentObservationSpace
 
 # Size in pixels of a cell in the full-scale human view
 CELL_PIXELS = 32
@@ -178,6 +178,28 @@ class Wall(WorldObj):
             (CELL_PIXELS,           0),
             (0          ,           0)
         ])
+
+class Agents():
+    """
+    Agent Class for holding all the agent specific information
+    """
+
+    def __init__(self, n_agents=2):
+        super().__init__()
+        self.n_agents = n_agents
+        self.agent_pos = {_: None for _ in range(self.n_agents)}
+
+    def can_overlap(self):
+        return False
+
+    def get_n_agents(self):
+        return self.n_agents
+
+    def reset_agent_pos(self):
+        self.agent_pos = {_: None for _ in range(self.n_agents)}
+
+    def set_agent_pos(self, new_pos):
+        self.agent_pos = {_: new_pos[_] for _ in range(self.n_agents)}
 
 class Grid:
     """
@@ -498,6 +520,7 @@ class MiniGridEnv(gym.Env):
         agent_view_size=3
     ):
         print("---init called")
+        self.agents = Agents(n_agents)
         # Can't set both grid_size and width/height
         if grid_size:
             assert width == None and height == None
@@ -505,14 +528,14 @@ class MiniGridEnv(gym.Env):
             height = grid_size
 
         # total number of agents 
-        self.n_agents = n_agents
+        #self.n_agents = n_agents
 
         # Action enumeration for this environment
         self.actions = MiniGridEnv.Actions
 
         # (ma.)Actions are discrete integer values
-        self.action_space = MultiAgentActionSpace(
-            [spaces.Discrete(len(self.actions)) for _ in range(self.n_agents)])
+        #self.action_space = MultiAgentActionSpace(
+        #    [spaces.Discrete(len(self.actions)) for _ in range(self.n_agents)])
         #self.action_space = spaces.Discrete(len(self.actions))
 
         # Number of cells (width and height) in the agent view
@@ -547,7 +570,7 @@ class MiniGridEnv(gym.Env):
 
         # (ma.)Current position and direction of the agent
         #self.agent_pos = None
-        self.agent_pos = {_: None for _ in range(self.n_agents)}
+        #self.agent_pos = {_: None for _ in range(self.n_agents)}
         #print('init: agent pos type: ',type(self.agent_pos))
         '''
         self.agent_pos = {_: None for _ in range(self.n_agents)}
@@ -566,7 +589,8 @@ class MiniGridEnv(gym.Env):
     def reset(self):
         #print("reset called")
         # (ma.) Current position and direction of the agent
-        self.agent_pos = {_: None for _ in range(self.n_agents)}
+        #self.agent_pos = {_: None for _ in range(self.n_agents)}
+        self.agents.reset_agent_pos()
         #for i in range(len(self.agent_pos)):
         #print('reset1:pos:',self.agent_pos)
         #self.agent_pos = None
@@ -580,15 +604,17 @@ class MiniGridEnv(gym.Env):
         #print('reset2:pos:',self.agent_pos)
         # (ma.) These fields should be defined by _gen_grid
         #assert self.agent_pos is not None
-        for i in range(len(self.agent_pos)):
+        #for i in range(len(self.agent_pos)):
+        for i in range(self.agents.n_agents):
             #print("reset asser:",type(self.agent_pos))
-            assert self.agent_pos[i] is not None
+            assert self.agents.agent_pos[i] is not None
         # assert self.agent_dir is not None
 
         # Check that the agent doesn't overlap with an object
-        for i in range(len(self.agent_pos)):
+        #for i in range(len(self.agent_pos)):
+        for i in range(self.agents.n_agents):
             #x = *self.agent_pos[i]
-            start_cell = self.grid.get(*self.agent_pos[i])
+            start_cell = self.grid.get(*self.agents.agent_pos[i])
             assert start_cell is None or start_cell.can_overlap()
 
         # Item picked up, being carried, initially nothing
@@ -597,10 +623,10 @@ class MiniGridEnv(gym.Env):
         # Step count since episode start
         self.step_count = 0
 
-        print('reset3:pos:',self.agent_pos)
+        #print('reset3:pos:',self.agents.agent_pos)
         # Return first observation
         obs = self.gen_obs()
-        print("reset4:pos:",self.agent_pos)
+        #print("reset4:pos:",self.agents.agent_pos)
         return obs
 
     def seed(self, seed=1337):
@@ -639,12 +665,12 @@ class MiniGridEnv(gym.Env):
         # }
 
         str = ''
-        for x in range(len(self.agent_pos)):
+        for x in range(self.agents.n_agents):
             for j in range(self.grid.height):
                 #i don't know what this does, how do i replace the agent_dir string portion here?
                 for i in range(self.grid.width):
                     #(ma)convert agent_pos in list of all agents                    
-                    if i == self.agent_pos[x][0] and j == self.agent_pos[x][1]:
+                    if i == self.agents.agent_pos[x][0] and j == self.agents.agent_pos[x][1]:
                         #print('agent pos['+i+'][0]:',self.agent_pos[i][0],'pos['+i+'][1]:',self.agent_pos[i][1])
                         str += '  '
                         continue
@@ -688,10 +714,10 @@ class MiniGridEnv(gym.Env):
         """
         Compute the reward to be given at given step
         """
-        reward = [None] * len(self.agent_pos)
+        reward = [None] * self.agents.n_agents
         #need to change reward from giving out reward at end goal(removed) to giving rewards at every step?
-        for i in range(len(self.agent_pos)):
-            cell = self.grid.get(self.agent_pos[i][0],self.agent_pos[i][1])
+        for i in range(self.agents.n_agents):
+            cell = self.grid.get(self.agents.agent_pos[i][0],self.agents.agent_pos[i][1])
             if cell is None:
                 reward[i] = -1
             elif cell.type == 'uncovered':
@@ -764,8 +790,8 @@ class MiniGridEnv(gym.Env):
             self.np_random.randint(yLow, yHigh)
         )
 
-    def getagents(self):
-        return self.n_agents
+#    def getagents(self):
+#        return self.n_agents
 
     def place_obj(self,
         obj,
@@ -838,10 +864,10 @@ class MiniGridEnv(gym.Env):
         """
         Set the agent's starting point at an empty position in the grid
         """
-        for i in range(len(self.agent_pos)):
-            self.agent_pos[i] = None
+        for i in range(self.agents.n_agents):
+            self.agents.agent_pos[i] = None
             pos = self.place_obj(None, top, size, max_tries=max_tries)
-            self.agent_pos[i] = pos
+            self.agents.agent_pos[i] = pos
 
         # if rand_dir:
         #     self.agent_dir = self._rand_int(0, 4)
@@ -880,9 +906,9 @@ class MiniGridEnv(gym.Env):
         """
         Get the position of the cell that is right in front of the agent
         """
-        x = [None] * len(self.agent_pos)
-        for i in range(len(self.agent_pos)):
-            x[i] = self.agent_pos[i] + np.array((1, 0))
+        x = [None] * self.agents.n_agents
+        for i in range(self.agents.n_agents):
+            x[i] = self.agents.agent_pos[i] + np.array((1, 0))
         return x 
 
     @property
@@ -890,9 +916,9 @@ class MiniGridEnv(gym.Env):
         """
         Get the position of the cell that is right in front of the agent
         """
-        x = [None] * len(self.agent_pos)
-        for i in range(len(self.agent_pos)):
-            x[i] = self.agent_pos[i] + np.array((0, 1))
+        x = [None] * self.agents.n_agents
+        for i in range(self.agents.n_agents):
+            x[i] = self.agents.agent_pos[i] + np.array((0, 1))
         return x
 
     @property
@@ -901,9 +927,9 @@ class MiniGridEnv(gym.Env):
         Get the position of the cell that is right in front of the agent
         """
         #print('pos[i],',self.agent_pos[0])
-        x = [None] * len(self.agent_pos)
-        for i in range(len(self.agent_pos)):
-            x[i] = self.agent_pos[i] + np.array((-1,0))
+        x = [None] * self.agents.n_agents
+        for i in range(self.agents.n_agents):
+            x[i] = self.agents.agent_pos[i] + np.array((-1,0))
         return x   
         #return self.agent_pos + np.array((-1, 0))
 
@@ -912,9 +938,9 @@ class MiniGridEnv(gym.Env):
         """
         Get the position of the cell that is right in front of the agent
         """
-        x = [None] * len(self.agent_pos)
-        for i in range(len(self.agent_pos)):
-            x[i] = self.agent_pos[i] + np.array((0,-1))
+        x = [None] * self.agents.n_agents
+        for i in range(self.agents.n_agents):
+            x[i] = self.agents.agent_pos[i] + np.array((0,-1))
         return x 
 
     def get_view_coords(self, i, j):
@@ -924,7 +950,7 @@ class MiniGridEnv(gym.Env):
         coordinates may be negative or outside of the agent's view size.
         """
 
-        ax, ay = self.agent_pos
+        ax, ay = self.agents.agent_pos
         dx, dy = self.dir_vec
         rx, ry = self.right_vec
 
@@ -951,31 +977,31 @@ class MiniGridEnv(gym.Env):
         Get the extents of the square set of tiles visible to the agent
         Note: the bottom extent indices are not included in the set
         """
-        topX = [None] * len(self.agent_pos)
-        topY = [None] * len(self.agent_pos)
-        botX = [None] * len(self.agent_pos)
-        botY = [None] * len(self.agent_pos)
+        topX = [None] * self.agents.n_agents
+        topY = [None] * self.agents.n_agents
+        botX = [None] * self.agents.n_agents
+        botY = [None] * self.agents.n_agents
 
         
-        for i in range(len(self.agent_pos)):
+        for i in range(self.agents.n_agents):
             # Facing right
             if self.agent_dir == 0:
             #print('topx: type is ',type(self.agent_pos[0][0]))
-                topX[i] = self.agent_pos[i][0]
+                topX[i] = self.agents.agent_pos[i][0]
                 #print('i is:',i,'type:',type(topX))
-                topY[i] = self.agent_pos[i][1] - self.agent_view_size // 2
+                topY[i] = self.agents.agent_pos[i][1] - self.agent_view_size // 2
             # Facing down
             elif self.agent_dir == 1:
-                topX[i] = self.agent_pos[i][0] - self.agent_view_size // 2
-                topY[i] = self.agent_pos[i][1]
+                topX[i] = self.agents.agent_pos[i][0] - self.agent_view_size // 2
+                topY[i] = self.agents.agent_pos[i][1]
             # Facing left
             elif self.agent_dir == 2:
-                topX[i] = self.agent_pos[i][0] - self.agent_view_size + 1
-                topY[i] = self.agent_pos[i][1] - self.agent_view_size // 2
+                topX[i] = self.agents.agent_pos[i][0] - self.agent_view_size + 1
+                topY[i] = self.agents.agent_pos[i][1] - self.agent_view_size // 2
             # Facing up
             elif self.agent_dir == 3:
-                topX[i] = self.agent_pos[i][0] - self.agent_view_size // 2
-                topY[i] = self.agent_pos[i][1] - self.agent_view_size + 1
+                topX[i] = self.agents.agent_pos[i][0] - self.agent_view_size // 2
+                topY[i] = self.agents.agent_pos[i][1] - self.agent_view_size + 1
             else:
                 assert False, "invalid agent direction"
 
@@ -1024,10 +1050,10 @@ class MiniGridEnv(gym.Env):
     def step(self, action):
         self.step_count += 1
         #add reward here to check if square moved to is in unchecked squares?
-        reward = [None] * len(self.agent_pos)
+        reward = [None] * self.agents.n_agents
         done = False
         
-        if len(action) != len(self.agent_pos):
+        if len(action) != self.agents.n_agents:
             print('len of actions and # of agents is not same')
             #TODO: check o/p with return
             return
@@ -1063,23 +1089,27 @@ class MiniGridEnv(gym.Env):
 
         #move left
         #for i in range(len(action)):
+            #print("position actions: ",i,left_pos[i], right_pos[i], up_pos[i], down_pos[i])
+            #print("agents ===>", self.agents.agent_pos)
+            print("before=====>",i, self.agents.agent_pos.values())
             if action[i] == self.actions.left:
-                if left_cell[i] == None or left_cell[i].can_overlap():
-                    self.agent_pos[i] = left_pos[i]
+                if (left_cell[i] == None or left_cell[i].can_overlap()) and tuple(left_pos[i]) not in self.agents.agent_pos.values():
+                    self.agents.agent_pos[i] = tuple(left_pos[i])                    
             elif action[i] == self.actions.right:
-                if right_cell[i] == None or right_cell[i].can_overlap():
-                    self.agent_pos[i] = right_pos[i]
+                if (right_cell[i] == None or right_cell[i].can_overlap()) and tuple(right_pos[i]) not in self.agents.agent_pos.values():
+                    self.agents.agent_pos[i] = tuple(right_pos[i])
             elif action[i] == self.actions.up:
-                if up_cell[i] == None or up_cell[i].can_overlap():
-                    self.agent_pos[i] = up_pos[i]
+                if (up_cell[i] == None or up_cell[i].can_overlap()) and tuple(up_pos[i]) not in self.agents.agent_pos.values():
+                    self.agents.agent_pos[i] = tuple(up_pos[i])
             elif action[i] == self.actions.down:
-                if down_cell[i] == None or down_cell[i].can_overlap():
-                    self.agent_pos[i] = down_pos[i]
+                if (down_cell[i] == None or down_cell[i].can_overlap()) and tuple(down_pos[i]) not in self.agents.agent_pos.values():
+                    self.agents.agent_pos[i] = tuple(down_pos[i])
             # Done action (not used by default)
             elif action[i] == self.actions.done:
                 pass
             else:
                 assert False, "unknown action"
+            print("after=====>",i, self.agents.agent_pos.values())    
 
         #determine reward
         reward = self._reward()
@@ -1091,8 +1121,8 @@ class MiniGridEnv(gym.Env):
 
 
         #set cell as covered
-        for i in range(len(self.agent_pos)):
-            self.grid.set(self.agent_pos[i][0],self.agent_pos[i][1],None)
+        for i in range(self.agents.n_agents):
+            self.grid.set(self.agents.agent_pos[i][0],self.agents.agent_pos[i][1],None)
 
             if self.step_count >= self.max_steps:
                 done = True
@@ -1124,7 +1154,7 @@ class MiniGridEnv(gym.Env):
         if not self.see_through_walls:
             #print('gen_obs_grid : not see through')
             vis_mask = grid.process_vis(agent_pos=(self.agent_view_size // 2 , self.agent_view_size - 1))
-            print('gen_obs_grid 1: pos',agent_pos)
+            print('gen_obs_grid 1: pos',self.agents.agent_pos)
         else:
             #print('in else:')
             vis_mask = np.ones(shape=(grid.width, grid.height), dtype=np.bool)
@@ -1136,10 +1166,9 @@ class MiniGridEnv(gym.Env):
         #grid.width = 3 , grid.height=3
         #agent_pos = 2,1
         agent_pos = grid.width // 2, grid.height - 1
-
         if self.carrying:
             grid.set(*agent_pos, self.carrying)
-            print('gen_obs_grid 6: pos',*agent_pos)
+            print('gen_obs_grid 6: pos',*self.agents.agent_pos)
         else:
             grid.set(*agent_pos, None)
             #print('gen_obs_grid 5: pos',*agent_pos)
@@ -1150,8 +1179,9 @@ class MiniGridEnv(gym.Env):
         """
         Generate the agent's view (partially observable, low-resolution encoding)
         """
-
+        #print("gen_obs 1:", self.agents.agent_pos)
         grid, vis_mask = self.gen_obs_grid()
+        #print("gen_obs 2:", self.agents.agent_pos)
 
         # Encode the partially observable view into a numpy array
         image = grid.encode(vis_mask)
@@ -1246,14 +1276,16 @@ class MiniGridEnv(gym.Env):
         self.grid.render(r, tile_size)
 
         # Draw the agent
-        for i in range(len(self.agent_pos)): 
+        for i in range(self.agents.n_agents): 
             ratio = tile_size / CELL_PIXELS
             r.push()
             r.scale(ratio, ratio)
-            
+            from pprint import pprint
+            #print("here\n\n")
+            #pprint(self.agents.agent_pos)    
             r.translate(
-                CELL_PIXELS * (self.agent_pos[i][0] + 0.5),
-                CELL_PIXELS * (self.agent_pos[i][1] + 0.5)
+                CELL_PIXELS * (self.agents.agent_pos[i][0] + 0.5),
+                CELL_PIXELS * (self.agents.agent_pos[i][1] + 0.5)
             )
             r.rotate(self.agent_dir * 90)
             r.setLineColor(255, 0, 0)
@@ -1272,9 +1304,9 @@ class MiniGridEnv(gym.Env):
         # of the agent's view area
         f_vec = self.dir_vec
         r_vec = self.right_vec
-        top_left = [None] * len(self.agent_pos)
-        for i in range(len(self.agent_pos)):
-            top_left[i] = self.agent_pos[i] + f_vec * (self.agent_view_size-1) - r_vec * (self.agent_view_size // 2)
+        top_left = [None] * self.agents.n_agents
+        for i in range(self.agents.n_agents):
+            top_left[i] = self.agents.agent_pos[i] + f_vec * (self.agent_view_size-1) - r_vec * (self.agent_view_size // 2)
 
             # For each cell in the visibility mask
             if highlight:

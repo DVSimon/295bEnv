@@ -17,7 +17,8 @@ def main():
         "--env-name",
         dest="env_name",
         help="gym environment to load",
-        default='MiniGrid-MultiRoom-N6-v0'
+        #default='MiniGrid-MultiRoom-N6-v0'
+        default='MiniGrid-Empty-8x8-v0'
     )
     (options, args) = parser.parse_args()
 
@@ -30,7 +31,7 @@ def main():
             print('Mission: %s' % env.mission)
 
     resetEnv()
-    n_agents = env.getagents()
+    n_agents = env.agents.n_agents
     #print('agents are: ',n_agents)
     
     # Create a window to render into
@@ -82,7 +83,7 @@ def main():
         # obs, reward, done, grid_str, info = env.step(action)
         #
         # print('step=%s, reward=%.2f, string=%s' % (env.step_count, reward, grid_str))
-
+            print(obs)
             if done:
                 print('done!')
                 resetEnv()
