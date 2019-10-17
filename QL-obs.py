@@ -8,6 +8,12 @@ import time
 from optparse import OptionParser
 import random
 import matplotlib.pyplot as plt
+from collections import defaultdict
+import hashlib
+import csv
+import pickle
+import dill
+from functools import partial
 
 def main():
     parser = OptionParser()
@@ -26,6 +32,9 @@ def main():
     def resetEnv():
         env.seed()
         env.reset()
+
+    def sha1(s):
+        return hashlib.sha1(s).hexdigest()
 
     # Convert action from numeric value to environmental directional actions
     def get_action(temp_action):
@@ -47,13 +56,13 @@ def main():
 
     # Assign state values from 2d array(positions on grid are mapped out in 2d(rows/columns)) to 1d for states
     # e.g. 8x8 grid(2d array) mapped to equivalent states
-    def table_conversion():
-        width = env.width - 2
-        pos_loc = []
-
-        for i in range(width):
-            pos_loc.append(np.arange(width*i, width*(i+1)))
-        return pos_loc
+    # def table_conversion():
+    #     width = env.width - 2
+    #     pos_loc = []
+    #
+    #     for i in range(width):
+    #         pos_loc.append(np.arange(width*i, width*(i+1)))
+    #     return pos_loc
 
     plotter = Plotter()
 
@@ -61,7 +70,7 @@ def main():
     resetEnv()
 
     # parameters, can be adjusted
-    episodes = 500
+    episodes = 200
     epsilon = 0.8
     decay = 0.99
     alpha = 0.1
@@ -71,25 +80,28 @@ def main():
     steps_to_complete = []
 
     # Initalize q-table [observation space x action space]
-    q_table = np.zeros([env.observation_space.n, env.action_space.n])
-    table_locator = table_conversion()
+    # q_table = defaultdict(lambda: np.random.uniform(size=(env.action_space.n,)))
+    q_table = defaultdict(lambda: np.zeros(shape=(env.action_space.n,)))
+    # table_locator = table_conversion()
 
     for e in range(episodes):
         # Calculate new epsilon-decay value -- decays with each new episode
         epsilon = epsilon*decay
 
         # Initial agents
-        agents = env.reset()
-
+        init_obs = env.reset()
+        # print(agents)
         states = {}
-        for agent_id, agent_pos in agents.agent_pos.items():
+        for agent_id in init_obs['image']:
             # Convert state(grid position) to a 1d state value
-            states[agent_id] = table_locator[agent_pos[0]-1][agent_pos[1]-1]
+            # states[agent_id] = agents['image'][agent_id]
+            states[agent_id] = sha1(np.array(init_obs['image'][agent_id]))
+        # print(states)
 
         while True:
             renderer = env.render('human')
 
-            time.sleep(5)
+            time.sleep(0.005)
 
             # Determine whether to explore or exploit for all agents during current step
             if random.uniform(0, 1) < epsilon:
@@ -99,7 +111,7 @@ def main():
 
             # Determine action for each agent
             actions = {}
-            for agent_id, agent_pos in agents.agent_pos.items():
+            for agent_id in init_obs['image']:
                 if exploit is False:
                     temp_action = env.action_space.sample() #explore
                 else:
@@ -110,23 +122,24 @@ def main():
 
             # Take step
             obs, reward, done, agents, info = env.step(actions)
+            # print('agents ', agents)
             # print('reward=%.2f' % (reward))
-            print(obs['image'][0])
-
+            # print(obs['image'])
+            # print('q table1 ', q_table)
             # Calculate q-table values for each agent
-            for agent_id, agent_pos in agents.agent_pos.items():
+            for agent_id in obs['image']:
                 # Using the agents new position returned from the environment, convert from grid coordinates to table based state for next state
-                next_state = table_locator[agent_pos[0]-1][agent_pos[1]-1]
-                old_val = q_table[states[agent_id], actions[agent_id]]
-
+                next_state = sha1(np.array(obs['image'][agent_id]))
+                old_val = q_table[states[agent_id]][actions[agent_id]]
+                # print('old val ', old_val)
+                # print('next state ', next_state)
                 # New possible max at the next state for q table calculations
                 next_max = np.max(q_table[next_state])
-
                 # Calculate new q value
                 new_q_val = (1-alpha) * old_val + alpha * (reward[agent_id] + gamma + next_max)
-                print(str(agent_id) + ':' + 'step=%s,reward=%.2f, new_q_val=%.2f, state=%i, action=%s' % (env.step_count, reward[agent_id], new_q_val, states[agent_id], actions[agent_id]))
+                print(str(agent_id) + ':' + 'step=%s,reward=%.2f, new_q_val=%.2f, state=%s, action=%s' % (env.step_count, reward[agent_id], new_q_val, states[agent_id], actions[agent_id]))
                 # print(obs[agent_id])
-                q_table[states[agent_id], actions[agent_id]] = new_q_val
+                q_table[states[agent_id]][actions[agent_id]] = new_q_val
 
                 states[agent_id] = next_state
 
@@ -144,6 +157,14 @@ def main():
 
 
     print("Training finished.\n")
+    #csv store
+    w = csv.writer(open("qt_output.csv", "w"))
+    for key, val in q_table.items():
+        w.writerow([key, val])
+    #pkl
+    f = open("qt.pkl","wb")
+    pickle.dump(dict(q_table), f)
+    f.close()
     #
     # while True:
     #     env.render('human')

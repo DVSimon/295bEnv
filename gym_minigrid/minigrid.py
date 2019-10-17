@@ -401,7 +401,7 @@ class Grid:
             for j in range(self.height):
                 for k in range(3):
                     print(array[i,j,k], ' -',end = '')
-                print('')    
+                print('')
         '''
         return array
 
@@ -547,7 +547,7 @@ class MiniGridEnv(gym.Env):
             width = grid_size
             height = grid_size
 
-        # total number of agents 
+        # total number of agents
         #self.n_agents = n_agents
 
         # Action enumeration for this environment
@@ -648,7 +648,8 @@ class MiniGridEnv(gym.Env):
         #print('reset3:pos:',self.agents.agent_pos)
         # Return first observation
         obs = self.gen_obs()
-        return self.agents
+        # return self.agents
+        return obs
 
     def seed(self, seed=1337):
         # Seed the random number generator
@@ -690,7 +691,7 @@ class MiniGridEnv(gym.Env):
             for j in range(self.grid.height):
                 #i don't know what this does, how do i replace the agent_dir string portion here?
                 for i in range(self.grid.width):
-                    #(ma)convert agent_pos in list of all agents                    
+                    #(ma)convert agent_pos in list of all agents
                     if i == self.agents.agent_pos[x][0] and j == self.agents.agent_pos[x][1]:
                         #print('agent pos['+i+'][0]:',self.agent_pos[i][0],'pos['+i+'][1]:',self.agent_pos[i][1])
                         str += '  '
@@ -723,7 +724,7 @@ class MiniGridEnv(gym.Env):
                 print(self.agent_pos[i][j])
         '''
 
-        #print(self.agent_pos[1]) 
+        #print(self.agent_pos[1])
         #print('***grid str is:',str)
         return str
 
@@ -857,7 +858,7 @@ class MiniGridEnv(gym.Env):
                 continue
 
             # Don't place the object where the agent is
-            for i in range(len(self.agents.agent_pos)):    
+            for i in range(len(self.agents.agent_pos)):
                 if np.array_equal(pos, self.agents.agent_pos[i]):
                     continue
             # Check if there is a filtering criterion
@@ -930,7 +931,7 @@ class MiniGridEnv(gym.Env):
         x = [None] * self.agents.n_agents
         for i in range(self.agents.n_agents):
             x[i] = self.agents.agent_pos[i] + np.array((1, 0))
-        return x 
+        return x
 
     @property
     def down_pos(self):
@@ -951,12 +952,12 @@ class MiniGridEnv(gym.Env):
         x = [None] * self.agents.n_agents
         for i in range(self.agents.n_agents):
             x[i] = self.agents.agent_pos[i] + np.array((-1,0))
-        return x   
+        return x
         #return self.agent_pos + np.array((-1, 0))
 
     # @property
     # def get_agent_pos(self):
-    #     return self.agent_pos 
+    #     return self.agent_pos
 
     @property
     def up_pos(self):
@@ -966,7 +967,7 @@ class MiniGridEnv(gym.Env):
         x = [None] * self.agents.n_agents
         for i in range(self.agents.n_agents):
             x[i] = self.agents.agent_pos[i] + np.array((0,-1))
-        return x 
+        return x
 
     def get_view_coords(self, i, j):
         """
@@ -1007,7 +1008,7 @@ class MiniGridEnv(gym.Env):
         botX = [None] * self.agents.n_agents
         botY = [None] * self.agents.n_agents
 
-        
+
         for i in range(self.agents.n_agents):
             # Facing right
             if self.agent_dir == 0:
@@ -1078,7 +1079,7 @@ class MiniGridEnv(gym.Env):
         #add reward here to check if square moved to is in unchecked squares?
         reward = [None] * self.agents.n_agents
         done = False
-        
+
         if len(action) != self.agents.n_agents:
             print('len of actions and # of agents is not same')
             #TODO: check o/p with return
@@ -1100,7 +1101,7 @@ class MiniGridEnv(gym.Env):
         down_pos = [None] * len(action)
         down_cell = [None] * len(action)
 
-        #cell direction contents 
+        #cell direction contents
         #(m.a- TODO: make self.left_pos and all list instead of single value)
         left_pos = self.left_pos
         right_pos = self.right_pos
@@ -1108,9 +1109,9 @@ class MiniGridEnv(gym.Env):
         down_pos = self.down_pos
 
         for i in range(len(action)):
-            left_cell[i] = self.grid.get(left_pos[i][0],left_pos[i][1])        
-            right_cell[i] = self.grid.get(right_pos[i][0],right_pos[i][1])            
-            up_cell[i] = self.grid.get(up_pos[i][0],up_pos[i][1])            
+            left_cell[i] = self.grid.get(left_pos[i][0],left_pos[i][1])
+            right_cell[i] = self.grid.get(right_pos[i][0],right_pos[i][1])
+            up_cell[i] = self.grid.get(up_pos[i][0],up_pos[i][1])
             down_cell[i] = self.grid.get(down_pos[i][0],down_pos[i][1])
 
 
@@ -1121,7 +1122,7 @@ class MiniGridEnv(gym.Env):
             # print("before=====>",i, self.agents.agent_pos.values())
             if action[i] == self.actions.left:
                 if (left_cell[i] == None or left_cell[i].can_overlap()) and tuple(left_pos[i]) not in self.agents.agent_pos.values():
-                    self.agents.agent_pos[i] = tuple(left_pos[i])                    
+                    self.agents.agent_pos[i] = tuple(left_pos[i])
             elif action[i] == self.actions.right:
                 if (right_cell[i] == None or right_cell[i].can_overlap()) and tuple(right_pos[i]) not in self.agents.agent_pos.values():
                     self.agents.agent_pos[i] = tuple(right_pos[i])
@@ -1136,7 +1137,7 @@ class MiniGridEnv(gym.Env):
                 pass
             else:
                 assert False, "unknown action"
-            # print("after=====>",i, self.agents.agent_pos.values())    
+            # print("after=====>",i, self.agents.agent_pos.values())
 
         #determine reward
         reward = self._reward()
@@ -1304,13 +1305,13 @@ class MiniGridEnv(gym.Env):
         self.grid.render(r, tile_size)
 
         # Draw the agent
-        for i in range(self.agents.n_agents): 
+        for i in range(self.agents.n_agents):
             ratio = tile_size / CELL_PIXELS
             r.push()
             r.scale(ratio, ratio)
             from pprint import pprint
             #print("here\n\n")
-            #pprint(self.agents.agent_pos)    
+            #pprint(self.agents.agent_pos)
             r.translate(
                 CELL_PIXELS * (self.agents.agent_pos[i][0] + 0.5),
                 CELL_PIXELS * (self.agents.agent_pos[i][1] + 0.5)
