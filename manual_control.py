@@ -87,7 +87,7 @@ def main():
         # obs, reward, done, grid_str, info = env.step(action)
         #
         # print('step=%s, reward=%.2f, string=%s' % (env.step_count, reward, grid_str))
-            # print(obs)
+            print(obs)
             if done:
                 print('done!')
                 resetEnv()

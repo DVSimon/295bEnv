@@ -9,13 +9,13 @@ class Plotter:
 
             plt.clf()
 
-            if option is '-lr': # linear regression scatter plot
-                fit = np.polyfit(x,steps_list,1)
-                fit_fn = np.poly1d(fit) 
+            # if option is '-lr': # linear regression scatter plot
+            fit = np.polyfit(x,steps_list,1)
+            fit_fn = np.poly1d(fit) 
 
-                plt.plot(x,steps_list, 'yo', x, fit_fn(x), '--k')
-            else: # line plot
-                plt.plot(steps_list)
+            plt.plot(x,steps_list, 'yo', x, fit_fn(x), '--k')
+            # else: # line plot
+            #     plt.plot(steps_list)
 
             plt.xlabel('Episode')
             plt.ylabel('Steps to completion')

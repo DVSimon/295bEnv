@@ -480,24 +480,7 @@ class Grid:
 
         return mask
 
-    def get_obs(self, pos):
-        arrays = {}
-
-        # print(pos)
-        for key,val in pos.items():
-            arrays[key] = np.zeros((3, 3), dtype='uint8')
-
-            for j in range(0,3):
-                for i in range(0,3):
-                    # print(val[0]-1+i, val[1]-1+j,self.get(val[0]-1+i, val[1]-1+j))
-                    if i==1 and j ==1:
-                        arrays[key][i,j] = 10
-                    elif self.get(val[0]-1+i, val[1]-1+j) is None:
-                        arrays[key][i,j] = 1
-                    else:
-                        arrays[key][i,j] = OBJECT_TO_IDX[self.get(val[0]-1+i, val[1]-1+j).type]
-
-        return arrays
+    
 
 class MiniGridEnv(gym.Env):
     """
@@ -533,11 +516,11 @@ class MiniGridEnv(gym.Env):
         grid_size=None,
         width=None,
         height=None,
-        n_agents=3,
+        n_agents=2,
         max_steps=100,
         see_through_walls=False,
         seed=23,
-        agent_view_size=3,
+        agent_view_radius=2,
     ):
         print("---init called")
         self.agents = Agents(n_agents)
@@ -559,7 +542,7 @@ class MiniGridEnv(gym.Env):
         self.action_space = spaces.Discrete(len(self.actions)-1)
 
         # Number of cells (width and height) in the agent view
-        self.agent_view_size = agent_view_size
+        self.agent_view_size = 2*agent_view_radius+1
 
         # Observations are dictionaries containing an
         # encoding of the grid and a textual 'mission' string
@@ -1174,58 +1157,48 @@ class MiniGridEnv(gym.Env):
         """
         #print("genobsgrid: ",self.agent_pos)
         topX, topY, botX, botY = self.get_view_exts()
-        # print('--',[x-1 for x in topX])
         new_topX = [x-1 for x in topX]
         grid = self.grid.slice(new_topX, topY, self.agent_view_size, self.agent_view_size)
-
-        # for i in range(self.agent_dir + 1):
-        #     grid = grid.rotate_left()
 
         # Process occluders and visibility
         # Note that this incurs some performance cost
         #print('===genobsgrid 3:',self.agent_pos)
-        if not self.see_through_walls:
-            #print('gen_obs_grid : not see through')
-            vis_mask = grid.process_vis(agent_pos=(self.agent_view_size // 2 , self.agent_view_size - 1))
-            print('gen_obs_grid 1: pos',self.agents.agent_pos)
-        else:
-            #print('in else:')
-            vis_mask = np.ones(shape=(grid.width, grid.height), dtype=np.bool)
-
-        #print('===genobsgrid 4:',self.agent_pos)
-        # Make it so the agent sees what it's carrying
-        # We do this by placing the carried object at the agent's position
-        # in the agent's partially observable view
-        # agent_pos = grid.width // 2, grid.height - 1
-        # if self.carrying:
-        #     grid.set(*agent_pos, self.carrying)
+        # if not self.see_through_walls:
+        #     vis_mask = grid.process_vis(agent_pos=(self.agent_view_size // 2 , self.agent_view_size - 1))
         # else:
-        #     grid.set(*agent_pos, None)
+        vis_mask = np.ones(shape=(grid.width, grid.height), dtype=np.bool)
 
         return grid, vis_mask
 
     def gen_obs(self):
         """
         Generate the agent's view (partially observable, low-resolution encoding)
+            0 - out of bounds
+            1 - covered
+            2 - wall
+            8 - uncovered
+            10- agent
         """
+        obs = {}
 
-        # grid, vis_mask = self.gen_obs_grid()
+        for key,val in self.agents.agent_pos.items():
+            obs[key] = np.zeros((self.agent_view_size, self.agent_view_size), dtype='uint8')
 
-        # Encode the partially observable view into a numpy array
-        # image = grid.encode(vis_mask)
-        image = self.grid.get_obs(self.agents.agent_pos)
+            for j in range(0,self.agent_view_size):
+                for i in range(0,self.agent_view_size):
+                    #calculate actual position on env grid
+                    actual_pos = (val[0]-self.agent_view_size//2+i, val[1]-self.agent_view_size//2+j)
 
-        # assert hasattr(self, 'mission'), "environments must define a textual mission string"
-
-        # Observations are dictionaries containing:
-        # - an image (partially observable view of the environment)
-        # - the agent's direction/orientation (acting as a compass)
-        # - a textual mission string (instructions for the agent)
-        obs = {
-            'image': image,
-            # 'direction': self.agent_dir,
-            # 'mission': self.mission
-        }
+                    if i==self.agent_view_size//2 and j ==self.agent_view_size//2:                  #agent location
+                        obs[key][j,i] = 10
+                    elif ~(0<=actual_pos[0]<self.grid.width and 0<=actual_pos[1]<self.grid.height): #outside env grid
+                        obs[key][j,i] = 0
+                    elif actual_pos in self.agents.agent_pos.values():                              #other agent
+                        obs[key][j,i] = 10
+                    elif self.grid.get(actual_pos[0], actual_pos[1]) is None:                       #covered cell
+                        obs[key][j,i] = 1
+                    else:                                                                           #uncovered/wall
+                        obs[key][j,i] = OBJECT_TO_IDX[self.grid.get(actual_pos[0], actual_pos[1]).type]
 
         return obs
 
@@ -1336,7 +1309,7 @@ class MiniGridEnv(gym.Env):
         r_vec = np.array((0, 1))
         top_left = [None] * self.agents.n_agents
         for i in range(self.agents.n_agents):
-            top_left[i] = self.agents.agent_pos[i] + f_vec * (self.agent_view_size-1) - r_vec * (self.agent_view_size // 2) - [1,0]
+            top_left[i] = self.agents.agent_pos[i] + f_vec * (self.agent_view_size-1) - r_vec * (self.agent_view_size // 2) - [self.agent_view_size // 2, 0]
 
             # For each cell in the visibility mask
             if highlight:

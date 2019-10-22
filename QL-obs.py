@@ -12,7 +12,6 @@ from collections import defaultdict
 import hashlib
 import csv
 import pickle
-import dill
 from functools import partial
 
 def main():
@@ -70,7 +69,7 @@ def main():
     resetEnv()
 
     # parameters, can be adjusted
-    episodes = 200
+    episodes = 500
     epsilon = 0.8
     decay = 0.99
     alpha = 0.1
@@ -92,16 +91,16 @@ def main():
         init_obs = env.reset()
         # print(agents)
         states = {}
-        for agent_id in init_obs['image']:
+        for agent_id in init_obs:
             # Convert state(grid position) to a 1d state value
             # states[agent_id] = agents['image'][agent_id]
-            states[agent_id] = sha1(np.array(init_obs['image'][agent_id]))
+            states[agent_id] = sha1(np.array(init_obs[agent_id]))
         # print(states)
 
         while True:
             renderer = env.render('human')
 
-            time.sleep(0.005)
+            # time.sleep(0.05)
 
             # Determine whether to explore or exploit for all agents during current step
             if random.uniform(0, 1) < epsilon:
@@ -111,7 +110,7 @@ def main():
 
             # Determine action for each agent
             actions = {}
-            for agent_id in init_obs['image']:
+            for agent_id in init_obs:
                 if exploit is False:
                     temp_action = env.action_space.sample() #explore
                 else:
@@ -127,9 +126,9 @@ def main():
             # print(obs['image'])
             # print('q table1 ', q_table)
             # Calculate q-table values for each agent
-            for agent_id in obs['image']:
+            for agent_id in obs:
                 # Using the agents new position returned from the environment, convert from grid coordinates to table based state for next state
-                next_state = sha1(np.array(obs['image'][agent_id]))
+                next_state = sha1(np.array(obs[agent_id]))
                 old_val = q_table[states[agent_id]][actions[agent_id]]
                 # print('old val ', old_val)
                 # print('next state ', next_state)
