@@ -516,11 +516,11 @@ class MiniGridEnv(gym.Env):
         grid_size=None,
         width=None,
         height=None,
-        n_agents=2,
+        n_agents=1,
         max_steps=100,
         see_through_walls=False,
         seed=23,
-        agent_view_radius=2,
+        agent_view_radius=1,
     ):
         print("---init called")
         self.agents = Agents(n_agents)
@@ -724,11 +724,11 @@ class MiniGridEnv(gym.Env):
         for i in range(self.agents.n_agents):
             cell = self.grid.get(self.agents.agent_pos[i][0],self.agents.agent_pos[i][1])
             if cell is None:
-                reward[i] = -1
+                reward[i] = 0
             elif cell.type == 'uncovered':
-                reward[i] = 1
+                reward[i] = 100
             else:
-                reward[i] = -1
+                reward[i] = 0
         return reward
 
     def _rand_int(self, low, high):

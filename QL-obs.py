@@ -98,7 +98,7 @@ def main():
         # print(states)
 
         while True:
-            renderer = env.render('human')
+            # renderer = env.render('human')
 
             # time.sleep(0.05)
 
@@ -128,19 +128,27 @@ def main():
             # Calculate q-table values for each agent
             for agent_id in obs:
                 # Using the agents new position returned from the environment, convert from grid coordinates to table based state for next state
+                # input("Press Enter to continue...")
                 next_state = sha1(np.array(obs[agent_id]))
+                # input(next_state)
                 old_val = q_table[states[agent_id]][actions[agent_id]]
+                # input(old_val)
                 # print('old val ', old_val)
                 # print('next state ', next_state)
                 # New possible max at the next state for q table calculations
                 next_max = np.max(q_table[next_state])
+                # input(next_max)
                 # Calculate new q value
-                new_q_val = (1-alpha) * old_val + alpha * (reward[agent_id] + gamma + next_max)
+                new_q_val = (1-alpha) * old_val + alpha * (reward[agent_id] + gamma * next_max)
+                # input(new_q_val)
                 print(str(agent_id) + ':' + 'step=%s,reward=%.2f, new_q_val=%.2f, state=%s, action=%s' % (env.step_count, reward[agent_id], new_q_val, states[agent_id], actions[agent_id]))
                 # print(obs[agent_id])
                 q_table[states[agent_id]][actions[agent_id]] = new_q_val
+                # input(q_table[states[agent_id]][actions[agent_id]])
+
 
                 states[agent_id] = next_state
+                # input(q_table)
 
             # time.sleep(10000)
             # time.sleep(1.5)
@@ -148,7 +156,12 @@ def main():
             if done:
                 # plot steps by episode
                 steps_to_complete.append(env.step_count)
-                plotter.plot_steps(steps_to_complete, '-lr')
+                if e % 50 == 0:
+                    plotter.plot_steps(steps_to_complete, '-lr')
+                    with open("qt_output.csv", "w") as outfile:
+                        writer = csv.writer(outfile)
+                        for key, val in q_table.items():
+                            writer.writerow([key, val])
 
                 print('done!')
                 print(q_table)

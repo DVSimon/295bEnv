@@ -21,4 +21,5 @@ class Plotter:
             plt.ylabel('Steps to completion')
             
             plt.ion()
+            plt.ioff()
             plt.show()
