@@ -516,7 +516,7 @@ class MiniGridEnv(gym.Env):
         grid_size=None,
         width=None,
         height=None,
-        n_agents=1,
+        n_agents=3,
         max_steps=100,
         see_through_walls=False,
         seed=23,
@@ -558,7 +558,7 @@ class MiniGridEnv(gym.Env):
         self.observation_space = spaces.Discrete((self.width-2)**2)
         # Change to (-1,1) ? neeed negative reward
         # Range of possible rewards
-        self.reward_range = (-1, 1)
+        # self.reward_range = (-1, 1)
 
         # Renderer object used to render the whole grid (full-scale)
         self.grid_render = None
@@ -593,42 +593,30 @@ class MiniGridEnv(gym.Env):
 
     def reset(self):
         #print("reset called")
-        # (ma.) Current position and direction of the agent
-        #self.agent_pos = {_: None for _ in range(self.n_agents)}
         self.agents.reset_agent_pos()
-        #for i in range(len(self.agent_pos)):
-        #print('reset1:pos:',self.agent_pos)
-        #self.agent_pos = None
-        #print('reset:',type(self.agent_pos))
-        # self.agent_dir = None
 
         # Generate a new random grid at the start of each episode
         # To keep the same grid for each episode, call env.seed() with
         # the same seed before calling env.reset()
         self._gen_grid(self.width, self.height)
-        #print('reset2:pos:',self.agent_pos)
-        # (ma.) These fields should be defined by _gen_grid
-        #assert self.agent_pos is not None
-        #for i in range(len(self.agent_pos)):
+        
         for i in range(self.agents.n_agents):
-            #print("reset asser:",type(self.agent_pos))
             assert self.agents.agent_pos[i] is not None
-        # assert self.agent_dir is not None
 
         # Check that the agent doesn't overlap with an object
-        #for i in range(len(self.agent_pos)):
         for i in range(self.agents.n_agents):
-            #x = *self.agent_pos[i]
             start_cell = self.grid.get(*self.agents.agent_pos[i])
             assert start_cell is None or start_cell.can_overlap()
 
-        # Item picked up, being carried, initially nothing
-        self.carrying = None
+        # maintain number of times each cell has been visited
+        self.grid_visited = np.zeros(shape=(self.width-2, self.height-2), dtype=int)
+        for i in range(self.agents.n_agents):
+            # print(self.agents.agent_pos[i])
+            self.grid_visited[self.agents.agent_pos[i][1]-1, self.agents.agent_pos[i][0]-1] = 1
 
         # Step count since episode start
         self.step_count = 0
 
-        #print('reset3:pos:',self.agents.agent_pos)
         # Return first observation
         obs = self.gen_obs()
         # return self.agents
@@ -657,18 +645,6 @@ class MiniGridEnv(gym.Env):
             'uncovered'     : 'U',
         }
 
-        # Short string for opened door
-        OPENDED_DOOR_IDS = '_'
-
-        # Map agent's direction to short string
-        #no need for directions
-        # AGENT_DIR_TO_STR = {
-        #     0: '>',
-        #     1: 'V',
-        #     2: '<',
-        #     3: '^'
-        # }
-
         str = ''
         for x in range(self.agents.n_agents):
             for j in range(self.grid.height):
@@ -686,29 +662,13 @@ class MiniGridEnv(gym.Env):
                     if c == None:
                         str += '  '
                         continue
-                    #
-                    # if c.type == 'door':
-                    #     if c.is_open:
-                    #         str += '__'
-                    #     elif c.is_locked:
-                    #         str += 'L' + c.color[0].upper()
-                    #     else:
-                    #         str += 'D' + c.color[0].upper()
-                    #     continue
 
                     str += OBJECT_TO_STR[c.type] + c.color[0].upper()
 
                 if j < self.grid.height - 1:
                     str += '\n'
                     #print('str is:')
-        '''
-        for i in range(self.n_agents):
-            for j in range(2):
-                print(self.agent_pos[i][j])
-        '''
 
-        #print(self.agent_pos[1])
-        #print('***grid str is:',str)
         return str
 
     def _gen_grid(self, width, height):
@@ -719,16 +679,24 @@ class MiniGridEnv(gym.Env):
         """
         Compute the reward to be given at given step
         """
+        # print(self.grid_visited)
+
+        # uncovered = +100; covered/wall = -1*times_visited
         reward = [None] * self.agents.n_agents
-        #need to change reward from giving out reward at end goal(removed) to giving rewards at every step?
         for i in range(self.agents.n_agents):
-            cell = self.grid.get(self.agents.agent_pos[i][0],self.agents.agent_pos[i][1])
-            if cell is None:
-                reward[i] = 0
+            agent_pos = self.agents.agent_pos[i]
+            cell = self.grid.get(agent_pos[0],agent_pos[1])
+            if cell is None or cell.type == 'wall':
+                # reward[i] = -1
+                reward[i] = -1 * self.grid_visited[agent_pos[1]-1, agent_pos[0]-1]
             elif cell.type == 'uncovered':
-                reward[i] = 100
+                reward[i] = 10
             else:
-                reward[i] = 0
+                assert False, "reward calculation error"
+
+            #increment visited count
+            self.grid_visited[agent_pos[1]-1, agent_pos[0]-1] += 1
+
         return reward
 
     def _rand_int(self, low, high):

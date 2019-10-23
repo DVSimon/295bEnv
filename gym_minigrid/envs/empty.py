@@ -13,7 +13,7 @@ class EmptyEnv(MiniGridEnv):
         size=8,
         agent_start_pos=(1,1),
         agent_start_dir=0,
-        obstacles=3,
+        obstacles=0,
     ):
         self.agent_start_pos = agent_start_pos
         self.agent_start_dir = agent_start_dir

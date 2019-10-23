@@ -7,6 +7,7 @@ import numpy as np
 import gym
 import time
 from optparse import OptionParser
+from pprint import pprint
 
 import gym_minigrid
 
@@ -80,14 +81,14 @@ def main():
             return
         if keyDownCb.num == n_agents-1:
             obs, reward, done, agents, info = env.step(action)
-            # print('step,reward=',env.step_count, reward)
+            print('step,reward=',env.step_count, reward)
 
         # print('step=%s, reward=%.2f, position=%s' % (env.step_count, reward, agent_position))
         # print('obs_space=%s, action_space=%s, grid_size=%s' % (env.observation_space, env.action_space, grid_size))
         # obs, reward, done, grid_str, info = env.step(action)
         #
         # print('step=%s, reward=%.2f, string=%s' % (env.step_count, reward, grid_str))
-            print(obs)
+            # pprint(obs)
             if done:
                 print('done!')
                 resetEnv()

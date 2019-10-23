@@ -69,10 +69,10 @@ def main():
     resetEnv()
 
     # parameters, can be adjusted
-    episodes = 500
+    episodes = 1000
     epsilon = 0.8
     decay = 0.99
-    alpha = 0.1
+    alpha = 0.01
     gamma = 0.6
 
     # metrics
@@ -154,6 +154,10 @@ def main():
             # time.sleep(1.5)
 
             if done:
+                print('done!')
+                # print("q table:",q_table)
+                print("times_visited:",env.grid_visited)
+
                 # plot steps by episode
                 steps_to_complete.append(env.step_count)
                 if e % 50 == 0:
@@ -161,10 +165,8 @@ def main():
                     with open("qt_output.csv", "w") as outfile:
                         writer = csv.writer(outfile)
                         for key, val in q_table.items():
-                            writer.writerow([key, val])
-
-                print('done!')
-                print(q_table)
+                            writer.writerow([key, *val])
+            
                 break
 
 
