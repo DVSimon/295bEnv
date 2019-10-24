@@ -1,3 +1,4 @@
+# TODO: Update README
 # Minimalistic Gridworld Environment (MiniGrid)
 
 [![Build Status](https://travis-ci.org/maximecb/gym-minigrid.svg?branch=master)](https://travis-ci.org/maximecb/gym-minigrid)

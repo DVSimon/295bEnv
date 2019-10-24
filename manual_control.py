@@ -7,7 +7,6 @@ import numpy as np
 import gym
 import time
 from optparse import OptionParser
-from pprint import pprint
 
 import gym_minigrid
 
@@ -29,19 +28,10 @@ def main():
         env.seed()
         env.reset()
 
-    resetEnv()
     n_agents = env.agents.n_agents
 
     # Create a window to render into
     renderer = env.render('human')
-
-    def table_conversion():
-        width = env.width - 2
-        pos_loc = []
-
-        for i in range(width):
-            pos_loc.append(np.arange(width*i, width*(i+1)))
-        return pos_loc
 
     def keyDownCb(keyName):
         keyDownCb.num += 1
@@ -65,37 +55,23 @@ def main():
             action[keyDownCb.num] = env.actions.up
         elif keyName == 'DOWN':
             action[keyDownCb.num] = env.actions.down
-        elif keyName == 'SPACE':
-            action[keyDownCb.num] = env.actions.toggle
-        elif keyName == 'PAGE_UP':
-            action[keyDownCb.num] = env.actions.pickup
-        elif keyName == 'PAGE_DOWN':
-            action[keyDownCb.num] = env.actions.drop
-
-        elif keyName == 'RETURN':
-            action[keyDownCb.num] = env.actions.done
-
         else:
             print("unknown key %s" % keyName)
             keyDownCb.num = -1
             return
+
         if keyDownCb.num == n_agents-1:
             obs, reward, done, agents, info = env.step(action)
             print('step,reward=',env.step_count, reward)
-            # print(obs)
+
             x = obs[0]
             temp_obs = ''
             for list in x:
                 temp = '-'.join(map(str, list))
                 temp_obs += '-' + temp
-                # temp_obs += temp
-            print(temp_obs)
-        # print('step=%s, reward=%.2f, position=%s' % (env.step_count, reward, agent_position))
-        # print('obs_space=%s, action_space=%s, grid_size=%s' % (env.observation_space, env.action_space, grid_size))
-        # obs, reward, done, grid_str, info = env.step(action)
-        #
-        # print('step=%s, reward=%.2f, string=%s' % (env.step_count, reward, grid_str))
-            # pprint(obs)
+            # print('step=%s, reward=%.2f, position=%s' % (env.step_count, reward, agent_position))
+            # print('obs_space=%s, action_space=%s, grid_size=%s' % (env.observation_space, env.action_space, grid_size))
+
             if done:
                 print('done!')
                 resetEnv()
@@ -106,7 +82,7 @@ def main():
 
     while True:
         env.render('human')
-        time.sleep(0.01)
+        # time.sleep(0.01)
 
         # If the window was closed
         if renderer.window == None:

@@ -1,0 +1,19 @@
+env:
+  grid_size: 8
+  obstacles: 3
+  agents: 3
+  obs_radius: 2
+  reward_type: 1
+  seed: 23
+
+ql:
+  render: True
+  episodes: 1050
+  epsilon: 0.8
+  decay: 0.99
+  alpha: 0.01
+  gamma: 0.6
+
+plt:
+  regression_type: lin  # lin/quad/exp
+  

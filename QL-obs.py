@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 
-import gym
-import gym_minigrid
+import gym, gym_minigrid
 from gym_minigrid.plot import Plotter
 import numpy as np
 import time
 from optparse import OptionParser
-import random
-import matplotlib.pyplot as plt
 from collections import defaultdict
-import hashlib
 import csv
 import pickle
-from functools import partial
+import yaml
+# import hashlib
 
 def main():
     parser = OptionParser()
@@ -28,12 +25,12 @@ def main():
     # Load the gym environment
     env = gym.make(options.env_name)
 
-    def resetEnv():
-        env.seed()
-        env.reset()
+    # def resetEnv():
+    #     env.seed()
+    #     env.reset()
 
-    def sha1(s):
-        return hashlib.sha1(s).hexdigest()
+    # def sha1(s):
+    #     return hashlib.sha1(s).hexdigest()
 
     # Convert action from numeric value to environmental directional actions
     def get_action(temp_action):
@@ -53,35 +50,27 @@ def main():
 
         return act
 
-    # Assign state values from 2d array(positions on grid are mapped out in 2d(rows/columns)) to 1d for states
-    # e.g. 8x8 grid(2d array) mapped to equivalent states
-    # def table_conversion():
-    #     width = env.width - 2
-    #     pos_loc = []
-    #
-    #     for i in range(width):
-    #         pos_loc.append(np.arange(width*i, width*(i+1)))
-    #     return pos_loc
-
     plotter = Plotter()
 
-    # Initialize environment
-    # resetEnv()
+    with open("config.yml", 'r') as ymlfile:
+        cfg = yaml.load(ymlfile)['ql']
 
-    # parameters, can be adjusted
-    episodes = 1000
-    epsilon = 0.8
-    decay = 0.99
-    alpha = 0.01
-    gamma = 0.6
+    # parameters, can be adjusted in config.yml    
+    episodes = cfg['episodes']
+    epsilon = cfg['epsilon']
+    decay = cfg['decay']
+    alpha = cfg['alpha']
+    gamma = cfg['gamma']
+
+    # render boolean
+    render = cfg['render']
 
     # metrics
     steps_to_complete = []
 
     # Initalize q-table [observation space x action space]
     # q_table = defaultdict(lambda: np.random.uniform(size=(env.action_space.n,)))
-    q_table = defaultdict(lambda: np.zeros(shape=(env.action_space.n,)))
-    # table_locator = table_conversion()
+    q_table = defaultdict(lambda: np.zeros(shape=(len(env.actions),)))
 
     for e in range(episodes):
         # Calculate new epsilon-decay value -- decays with each new episode
@@ -89,8 +78,7 @@ def main():
 
         # Initial agents
         init_obs = env.reset()
-        # print(agents)
-        print(init_obs)
+
         states = {}
         for agent_id in init_obs:
             # Convert state(grid position) to a 1d state value
@@ -100,15 +88,15 @@ def main():
                 temp = ','.join(map(str, list))
                 temp_obs += ',' + temp
             states[agent_id]  = temp_obs
-        print(states)
 
         while True:
-            renderer = env.render('human')
+            if render:
+                env.render('human', info="Episode: %s \tStep: %s" % (str(e),str(env.step_count)))
 
             # time.sleep(3)
 
             # Determine whether to explore or exploit for all agents during current step
-            if random.uniform(0, 1) < epsilon:
+            if np.random.uniform(0, 1) < epsilon:
                 exploit = False #explore
             else:
                 exploit = True  #exploit
@@ -123,15 +111,10 @@ def main():
 
                 # Convert action from numeric to environment-accepted directional action
                 actions[agent_id] = get_action(temp_action)
-                print('tempaction', temp_action)
-            print(actions)
 
             # Take step
             obs, reward, done, agents, info = env.step(actions)
-            # print('agents ', agents)
-            # print('reward=%.2f' % (reward))
-            # print(obs['image'])
-            # print('q table1 ', q_table)
+            
             # Calculate q-table values for each agent
             for agent_id in obs:
                 # Using the agents new position returned from the environment, convert from grid coordinates to table based state for next state
@@ -141,45 +124,33 @@ def main():
                     temp = ','.join(map(str, list))
                     next_state += ',' + temp
                 old_val = q_table[states[agent_id]][actions[agent_id]]
-                # input(old_val)
-                # print('old val ', old_val)
-                # print('next state ', next_state)
+                
                 # New possible max at the next state for q table calculations
                 next_max = np.max(q_table[next_state])
-                # input(next_max)
+
                 # Calculate new q value
                 new_q_val = (1-alpha) * old_val + alpha * (reward[agent_id] + gamma * next_max)
-                # input(new_q_val)
                 print(str(agent_id) + ':' + 'step=%s,reward=%.2f, new_q_val=%.2f, state=%s, action=%s' % (env.step_count, reward[agent_id], new_q_val, states[agent_id], actions[agent_id]))
-                # print(obs[agent_id])
+                
                 q_table[states[agent_id]][actions[agent_id]] = new_q_val
-                # input(q_table[states[agent_id]][actions[agent_id]])
+
                 states[agent_id] = next_state
-            # print(q_table)
-            # input("Press Enter to continue...")
-            # time.sleep(120)
-                # input(q_table)
-            # print(q_table)
-
-            # time.sleep(10000)
-            # time.sleep(1.5)
-
+           
             if done:
                 print('done!')
                 # print("q table:",q_table)
-                print("times_visited:",env.grid_visited)
+                # print("times_visited:",env.grid_visited)
 
                 # plot steps by episode
                 steps_to_complete.append(env.step_count)
-                if e % 50 == 0:
-                    plotter.plot_steps(steps_to_complete, '-lr')
+                if e % 100 == 0:
+                    plotter.plot_steps(steps_to_complete)
                     with open("qt_output.csv", "w") as outfile:
                         writer = csv.writer(outfile)
                         for key, val in q_table.items():
                             writer.writerow([key, *val])
 
                 break
-
 
     print("Training finished.\n")
     #csv store
@@ -190,14 +161,6 @@ def main():
     f = open("qt.pkl","wb")
     pickle.dump(dict(q_table), f)
     f.close()
-    #
-    # while True:
-    #     env.render('human')
-    #     time.sleep(0.01)
-
-        # # If the window was closed
-        # if renderer.window == None:
-        #     break
 
 if __name__ == "__main__":
     main()

@@ -19,10 +19,10 @@ class Window(QMainWindow):
         self.imgLabel = QLabel()
         self.imgLabel.setFrameStyle(QFrame.Panel | QFrame.Sunken)
 
-        # Text box for the mission
-        # self.missionBox = QTextEdit()
-        # self.missionBox.setReadOnly(True)
-        # self.missionBox.setMinimumSize(400, 100)
+        # Text box for info
+        self.infoBox = QTextEdit()
+        self.infoBox.setReadOnly(True)
+        self.infoBox.setMinimumSize(300, 50)
 
         # Center the image
         hbox = QHBoxLayout()
@@ -33,7 +33,7 @@ class Window(QMainWindow):
         # Arrange widgets vertically
         vbox = QVBoxLayout()
         vbox.addLayout(hbox)
-        # vbox.addWidget(self.missionBox)
+        vbox.addWidget(self.infoBox)
 
         # Create a main widget for the window
         mainWidget = QWidget(self)
@@ -56,7 +56,7 @@ class Window(QMainWindow):
         self.imgLabel.setPixmap(pixmap)
 
     def setText(self, text):
-        self.missionBox.setPlainText(text)
+        self.infoBox.setPlainText(text)
 
     def setKeyDownCb(self, callback):
         self.keyDownCb = callback
