@@ -66,7 +66,7 @@ def main():
     plotter = Plotter()
 
     # Initialize environment
-    resetEnv()
+    # resetEnv()
 
     # parameters, can be adjusted
     episodes = 1000
@@ -90,17 +90,22 @@ def main():
         # Initial agents
         init_obs = env.reset()
         # print(agents)
+        print(init_obs)
         states = {}
         for agent_id in init_obs:
             # Convert state(grid position) to a 1d state value
-            # states[agent_id] = agents['image'][agent_id]
-            states[agent_id] = sha1(np.array(init_obs[agent_id]))
-        # print(states)
+            # states[agent_id] = sha1(np.array(init_obs[agent_id]))
+            temp_obs = ''
+            for list in init_obs[agent_id]:
+                temp = ','.join(map(str, list))
+                temp_obs += ',' + temp
+            states[agent_id]  = temp_obs
+        print(states)
 
         while True:
-            # renderer = env.render('human')
+            renderer = env.render('human')
 
-            # time.sleep(0.05)
+            # time.sleep(3)
 
             # Determine whether to explore or exploit for all agents during current step
             if random.uniform(0, 1) < epsilon:
@@ -118,6 +123,8 @@ def main():
 
                 # Convert action from numeric to environment-accepted directional action
                 actions[agent_id] = get_action(temp_action)
+                print('tempaction', temp_action)
+            print(actions)
 
             # Take step
             obs, reward, done, agents, info = env.step(actions)
@@ -128,9 +135,11 @@ def main():
             # Calculate q-table values for each agent
             for agent_id in obs:
                 # Using the agents new position returned from the environment, convert from grid coordinates to table based state for next state
-                # input("Press Enter to continue...")
-                next_state = sha1(np.array(obs[agent_id]))
-                # input(next_state)
+                # next_state = sha1(np.array(obs[agent_id]))
+                next_state = ''
+                for list in obs[agent_id]:
+                    temp = ','.join(map(str, list))
+                    next_state += ',' + temp
                 old_val = q_table[states[agent_id]][actions[agent_id]]
                 # input(old_val)
                 # print('old val ', old_val)
@@ -145,10 +154,12 @@ def main():
                 # print(obs[agent_id])
                 q_table[states[agent_id]][actions[agent_id]] = new_q_val
                 # input(q_table[states[agent_id]][actions[agent_id]])
-
-
                 states[agent_id] = next_state
+            # print(q_table)
+            # input("Press Enter to continue...")
+            # time.sleep(120)
                 # input(q_table)
+            # print(q_table)
 
             # time.sleep(10000)
             # time.sleep(1.5)
@@ -166,7 +177,7 @@ def main():
                         writer = csv.writer(outfile)
                         for key, val in q_table.items():
                             writer.writerow([key, *val])
-            
+
                 break
 
 

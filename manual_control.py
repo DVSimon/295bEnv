@@ -31,14 +31,14 @@ def main():
 
     resetEnv()
     n_agents = env.agents.n_agents
-    
+
     # Create a window to render into
     renderer = env.render('human')
 
     def table_conversion():
         width = env.width - 2
         pos_loc = []
-       
+
         for i in range(width):
             pos_loc.append(np.arange(width*i, width*(i+1)))
         return pos_loc
@@ -82,7 +82,14 @@ def main():
         if keyDownCb.num == n_agents-1:
             obs, reward, done, agents, info = env.step(action)
             print('step,reward=',env.step_count, reward)
-
+            # print(obs)
+            x = obs[0]
+            temp_obs = ''
+            for list in x:
+                temp = '-'.join(map(str, list))
+                temp_obs += '-' + temp
+                # temp_obs += temp
+            print(temp_obs)
         # print('step=%s, reward=%.2f, position=%s' % (env.step_count, reward, agent_position))
         # print('obs_space=%s, action_space=%s, grid_size=%s' % (env.observation_space, env.action_space, grid_size))
         # obs, reward, done, grid_str, info = env.step(action)

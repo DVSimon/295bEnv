@@ -480,7 +480,7 @@ class Grid:
 
         return mask
 
-    
+
 
 class MiniGridEnv(gym.Env):
     """
@@ -497,8 +497,8 @@ class MiniGridEnv(gym.Env):
         # Turn left, turn right, move forward
         #go left, up, right down
         left = 0
-        right = 1
-        up = 2
+        up = 1
+        right = 2
         down = 3
 
         # # Pick up an object
@@ -599,7 +599,7 @@ class MiniGridEnv(gym.Env):
         # To keep the same grid for each episode, call env.seed() with
         # the same seed before calling env.reset()
         self._gen_grid(self.width, self.height)
-        
+
         for i in range(self.agents.n_agents):
             assert self.agents.agent_pos[i] is not None
 
