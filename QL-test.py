@@ -11,7 +11,6 @@ import pickle
 import yaml
 # import hashlib
 
-
 def main():
     parser = OptionParser()
     parser.add_option(
@@ -52,31 +51,39 @@ def main():
         return act
 
     with open("config.yml", 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)['ql']
+        cfg= yaml.load(ymlfile)
+        ql = cfg['ql']
+        rnd = cfg['rnd']
 
     # render boolean
-    render = cfg['render']
+    grid_render = rnd['grid_render']
+    obs_render = rnd['obs_render']
+    gray = rnd['grayscale']
+    sleep = rnd['sleep']
 
     q_table = pickle.load(open('qt.pkl', 'rb'))
     # print(len(q_table))
 
-    init_obs = env.reset()
+    obs = env.reset()
     states = {}
-    for agent_id in init_obs:
+    for agent_id in obs:
         # Convert state(grid position) to a 1d state value
         # states[agent_id] = sha1(np.array(init_obs[agent_id]))
         temp_obs = ''
-        for list in init_obs[agent_id]:
+        for list in obs[agent_id]:
             temp = ','.join(map(str, list))
             temp_obs += ',' + temp
         states[agent_id]  = temp_obs
 
     knp = 0
     while True:
-        if render:
-            env.render('human', info="Step: %s" % (str(env.step_count)))
+        if obs_render:
+            env.get_obs_render(obs, grayscale=gray)
+        if grid_render:
+            env.render('human', highlight=True, grayscale=gray, info="Step: %s" % (str(env.step_count)))
 
-        time.sleep(1)
+
+        time.sleep(sleep)
 
         if np.random.uniform(0, 1) < 0.1:
             exploit = False #explore
@@ -85,7 +92,7 @@ def main():
 
         # Determine action for each agent
         actions = {}
-        for agent_id in init_obs:
+        for agent_id in obs:
             if states[agent_id] not in q_table:
                 print('key not present:', knp)
                 knp += 1
