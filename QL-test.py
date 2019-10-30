@@ -81,7 +81,7 @@ def main():
             env.get_obs_render(obs, grayscale=gray)
         if grid_render:
             env.render('human', highlight=True, grayscale=gray, info="Step: %s" % (str(env.step_count)))
-
+        #test
 
         time.sleep(sleep)
 
