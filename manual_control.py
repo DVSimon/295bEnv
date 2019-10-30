@@ -24,14 +24,15 @@ def main():
     # Load the gym environment
     env = gym.make(options.env_name)
 
-    def resetEnv():
-        env.seed()
-        env.reset()
+    # def resetEnv():
+        # env.seed()
+    obs = env.reset()
 
     n_agents = env.agents.n_agents
 
     # Create a window to render into
-    renderer = env.render('human')
+    renderer = env.render('human', highlight=True, grayscale=False)
+    # env.get_obs_render(0, obs[0], grayscale=False
 
     def keyDownCb(keyName):
         keyDownCb.num += 1
@@ -39,7 +40,7 @@ def main():
             keyDownCb.num = 0
 
         if keyName == 'BACKSPACE':
-            resetEnv()
+            obs = env.reset()
             keyDownCb.num = -1
             return
 
@@ -63,25 +64,30 @@ def main():
         if keyDownCb.num == n_agents-1:
             obs, reward, done, agents, info = env.step(action)
             print('step,reward=',env.step_count, reward)
+            
+            # env.get_obs_render(0, obs[0], grayscale=False)
 
-            x = obs[0]
-            temp_obs = ''
-            for list in x:
-                temp = '-'.join(map(str, list))
-                temp_obs += '-' + temp
+
+            # x = obs[0]
+            # temp_obs = ''
+            # for list in x:
+            #     temp = '-'.join(map(str, list))
+            #     temp_obs += '-' + temp
             # print('step=%s, reward=%.2f, position=%s' % (env.step_count, reward, agent_position))
             # print('obs_space=%s, action_space=%s, grid_size=%s' % (env.observation_space, env.action_space, grid_size))
 
             if done:
                 print('done!')
-                resetEnv()
+                obs = env.reset()
 
     keyDownCb.num = -1
     action = [None] * n_agents
     renderer.window.setKeyDownCb(keyDownCb)
 
     while True:
-        env.render('human')
+        env.render('human', highlight=False, grayscale=False)
+        # env.get_obs_render(0, obs[0])
+
         # time.sleep(0.01)
 
         # If the window was closed

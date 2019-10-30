@@ -40,3 +40,4 @@ class Plotter:
             plt.ion()
             plt.ioff()
             plt.show()
+            # plt.savefig('steps_graph.png')

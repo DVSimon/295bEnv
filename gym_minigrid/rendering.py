@@ -10,19 +10,21 @@ class Window(QMainWindow):
     Simple application window to render the environment into
     """
 
-    def __init__(self):
+    def __init__(self, title, info=True):
         super().__init__()
 
-        self.setWindowTitle('MiniGrid Gym Environment')
+        self.setWindowTitle(title)
 
         # Image label to display the rendering
         self.imgLabel = QLabel()
         self.imgLabel.setFrameStyle(QFrame.Panel | QFrame.Sunken)
 
         # Text box for info
-        self.infoBox = QTextEdit()
-        self.infoBox.setReadOnly(True)
-        self.infoBox.setMinimumSize(300, 50)
+        self.infoBox = None
+        if info:
+            self.infoBox = QTextEdit()
+            self.infoBox.setReadOnly(True)
+            self.infoBox.setMinimumSize(300, 50)
 
         # Center the image
         hbox = QHBoxLayout()
@@ -96,7 +98,7 @@ class Window(QMainWindow):
         self.keyDownCb(keyName)
 
 class Renderer:
-    def __init__(self, width, height, ownWindow=False):
+    def __init__(self, width, height, ownWindow=False, title='MiniGrid Gym Environment', info=True):
         self.width = width
         self.height = height
 
@@ -106,7 +108,7 @@ class Renderer:
         self.window = None
         if ownWindow:
             self.app = QApplication([])
-            self.window = Window()
+            self.window = Window(title, info)
 
     def close(self):
         """

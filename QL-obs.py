@@ -53,17 +53,22 @@ def main():
     plotter = Plotter()
 
     with open("config.yml", 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)['ql']
+        cfg= yaml.load(ymlfile)
+        ql = cfg['ql']
+        rnd = cfg['rnd']
 
     # parameters, can be adjusted in config.yml    
-    episodes = cfg['episodes']
-    epsilon = cfg['epsilon']
-    decay = cfg['decay']
-    alpha = cfg['alpha']
-    gamma = cfg['gamma']
+    episodes = ql['episodes']
+    epsilon = ql['epsilon']
+    decay = ql['decay']
+    alpha = ql['alpha']
+    gamma = ql['gamma']
 
     # render boolean
-    render = cfg['render']
+    grid_render = rnd['grid_render']
+    obs_render = rnd['obs_render']
+    gray = rnd['grayscale']
+    sleep = rnd['sleep']
 
     # metrics
     steps_to_complete = []
@@ -77,23 +82,25 @@ def main():
         epsilon = epsilon*decay
 
         # Initial agents
-        init_obs = env.reset()
+        obs = env.reset()
 
         states = {}
-        for agent_id in init_obs:
+        for agent_id in obs:
             # Convert state(grid position) to a 1d state value
             # states[agent_id] = sha1(np.array(init_obs[agent_id]))
             temp_obs = ''
-            for list in init_obs[agent_id]:
+            for list in obs[agent_id]:
                 temp = ','.join(map(str, list))
                 temp_obs += ',' + temp
             states[agent_id]  = temp_obs
 
         while True:
-            if render:
-                env.render('human', info="Episode: %s \tStep: %s" % (str(e),str(env.step_count)))
+            if obs_render:
+                env.get_obs_render(obs, grayscale=gray)
+            if grid_render:
+                env.render('human', highlight=True, grayscale=gray, info="Episode: %s \tStep: %s" % (str(e),str(env.step_count)))
 
-            # time.sleep(3)
+            time.sleep(sleep)
 
             # Determine whether to explore or exploit for all agents during current step
             if np.random.uniform(0, 1) < epsilon:
@@ -103,7 +110,7 @@ def main():
 
             # Determine action for each agent
             actions = {}
-            for agent_id in init_obs:
+            for agent_id in obs:
                 if exploit is False:
                     temp_action = env.action_space.sample() #explore
                 else:
@@ -130,7 +137,7 @@ def main():
 
                 # Calculate new q value
                 new_q_val = (1-alpha) * old_val + alpha * (reward[agent_id] + gamma * next_max)
-                print(str(agent_id) + ':' + 'step=%s,reward=%.2f, new_q_val=%.2f, state=%s, action=%s' % (env.step_count, reward[agent_id], new_q_val, states[agent_id], actions[agent_id]))
+                print(str(agent_id) + ':' + 'episode=%s, step=%s, reward=%.2f, new_q_val=%.2f, state=%s, action=%s' % (e, env.step_count, reward[agent_id], new_q_val, states[agent_id], actions[agent_id]))
                 
                 q_table[states[agent_id]][actions[agent_id]] = new_q_val
 
@@ -143,7 +150,7 @@ def main():
 
                 # plot steps by episode
                 steps_to_complete.append(env.step_count)
-                if e % 100 == 0:
+                if e % 1000 == 0:
                     plotter.plot_steps(steps_to_complete)
                     with open("qt_output.csv", "w") as outfile:
                         writer = csv.writer(outfile)
@@ -153,12 +160,16 @@ def main():
                 break
 
     print("Training finished.\n")
-    #csv store
-    w = csv.writer(open("qt_output.csv", "w"))
+    #csv store steps_to_complete
+    w = csv.writer(open("steps_output.csv", "w+"))
+    for i in range(len(steps_to_complete)):
+        w.writerow([i, steps_to_complete[i]])
+    #csv store q_table
+    w = csv.writer(open("qt_output.csv", "w+"))
     for key, val in q_table.items():
         w.writerow([key, val])
     #pkl
-    f = open("qt.pkl","wb")
+    f = open("qt.pkl","wb+")
     pickle.dump(dict(q_table), f)
     f.close()
 

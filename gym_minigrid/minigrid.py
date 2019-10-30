@@ -15,10 +15,12 @@ CELL_PIXELS = 32
 COLORS = {
     'red'   : np.array([255, 0, 0]),
     'green' : np.array([0, 153, 0]),
-    'blue'  : np.array([0, 0, 255]),
+    'blue'  : np.array([51, 153, 255]),
     'purple': np.array([112, 39, 195]),
     'yellow': np.array([255, 255, 0]),
-    'grey'  : np.array([100, 100, 100])
+    'grey'  : np.array([100, 100, 100]),
+    'black' : np.array([0, 0, 0]),
+    'white' : np.array([255, 255, 255]),
 }
 
 COLOR_NAMES = sorted(list(COLORS.keys()))
@@ -30,17 +32,18 @@ COLOR_TO_IDX = {
     'blue'  : 2,
     'purple': 3,
     'yellow': 4,
-    'grey'  : 5
+    'grey'  : 5,
+    'black' : 6,
+    'white' : 7,
 }
 
 IDX_TO_COLOR = dict(zip(COLOR_TO_IDX.values(), COLOR_TO_IDX.keys()))
 
 # Map of object type to integers
 OBJECT_TO_IDX = {
-    'unseen'        : 0,
+    'out-of-bounds' : 0,
     'empty'         : 1,
     'wall'          : 2,
-    'floor'         : 3,
     'uncovered'     : 8,
     'agent'         : 10,
 }
@@ -79,9 +82,12 @@ class WorldObj:
         r.setLineColor(c[0], c[1], c[2])
         r.setColor(c[0], c[1], c[2])
 
-class Covered(WorldObj):
-    def __init__(self):
-        super().__init__('empty', None)
+    def change_color(self, color):
+        self.color = color
+
+class OutOfBounds(WorldObj):
+    def __init__(self, color='black'):
+        super().__init__('empty', color)
 
     def can_overlap(self):
         return True
@@ -96,8 +102,8 @@ class Covered(WorldObj):
         ])
 
 class Uncovered(WorldObj):
-    def __init__(self):
-        super().__init__('uncovered', 'green')
+    def __init__(self, color='green'):
+        super().__init__('uncovered', color)
 
     def can_overlap(self):
         return True
@@ -109,29 +115,6 @@ class Uncovered(WorldObj):
             (CELL_PIXELS, CELL_PIXELS),
             (CELL_PIXELS,           0),
             (0          ,           0)
-        ])
-
-class Floor(WorldObj):
-    """
-    Colored floor tile the agent can walk over
-    """
-
-    def __init__(self, color='blue'):
-        super().__init__('floor', color)
-
-    def can_overlap(self):
-        return True
-
-    def render(self, r):
-        # Give the floor a pale color
-        c = COLORS[self.color]
-        r.setLineColor(100, 100, 100, 0)
-        r.setColor(*c/2)
-        r.drawPolygon([
-            (1          , CELL_PIXELS),
-            (CELL_PIXELS, CELL_PIXELS),
-            (CELL_PIXELS,           1),
-            (1          ,           1)
         ])
 
 class Wall(WorldObj):
@@ -146,6 +129,21 @@ class Wall(WorldObj):
             (CELL_PIXELS,           0),
             (0          ,           0)
         ])
+
+class Agent(WorldObj):
+    def __init__(self, color='white'):
+        super().__init__('agent', color)
+
+    def render(self, r):
+        r.push()
+        r.translate(
+            CELL_PIXELS * 0.5,
+            CELL_PIXELS * 0.5,
+        )
+        r.setLineColor(51, 153, 255)
+        r.setColor(51, 153, 255)
+        r.drawCircle(0,0,10)
+        r.pop()
 
 class Agents():
     """
@@ -280,7 +278,7 @@ class Grid:
 
         return grid
 
-    def render(self, r, tile_size):
+    def render(self, r, tile_size, grayscale=False):
         """
         Render this grid at a given scale
         :param r: target renderer object
@@ -300,17 +298,27 @@ class Grid:
         # use the renderer to scale back to the desired size
         r.scale(tile_size / CELL_PIXELS, tile_size / CELL_PIXELS)
 
-        # Draw the background of the in-world cells black
+        # Draw the background of the in-world cells
+        # if grayscale:
         r.fillRect(
             0,
             0,
             widthPx,
             heightPx,
-            0, 0, 0
+            255, 255, 255   # white
         )
+        # else:
+        #     r.fillRect(
+        #         0,
+        #         0,
+        #         widthPx,
+        #         heightPx,
+        #         0, 0, 0         # black
+        #     )
 
         # Draw grid lines
         r.setLineColor(100, 100, 100)
+        
         for rowIdx in range(0, self.height):
             y = CELL_PIXELS * rowIdx
             r.drawLine(0, y, widthPx, y)
@@ -324,6 +332,13 @@ class Grid:
                 cell = self.get(i, j)
                 if cell == None:
                     continue
+                if grayscale:
+                    if cell.type == 'wall':
+                        cell.change_color('black')
+                    elif cell.type == 'uncovered':
+                        cell.change_color('grey')
+                    elif cell.type == 'out-of-bounds':
+                        cell.change_color('white')
                 r.push()
                 r.translate(i * CELL_PIXELS, j * CELL_PIXELS)
                 cell.render(r)
@@ -371,33 +386,29 @@ class Grid:
         Decode an array grid encoding back into a grid
         """
 
-        width, height, channels = array.shape
-        assert channels == 3
+        width, height = array.shape
         grid = Grid(width, height)
         for i in range(width):
             for j in range(height):
-                typeIdx, colorIdx, state = array[i, j]
+                typeIdx = array[i, j]
 
-                if typeIdx == OBJECT_TO_IDX['unseen'] or \
-                        typeIdx == OBJECT_TO_IDX['empty']:
+                if typeIdx == OBJECT_TO_IDX['empty']:
                     continue
 
                 objType = IDX_TO_OBJECT[typeIdx]
-                color = IDX_TO_COLOR[colorIdx]
-                # State, 0: open, 1: closed, 2: locked
-                is_open = state == 0
-                is_locked = state == 2
 
                 if objType == 'wall':
-                    v = Wall(color)
-                elif objType == 'floor':
-                    v = Floor(color)
+                    v = Wall()
                 elif objType == 'uncovered':
                     v = Uncovered()
+                elif objType == 'out-of-bounds':
+                    v = OutOfBounds()
+                elif objType == 'agent':
+                    v = Agent()
                 else:
                     assert False, "unknown obj type in decode '%s'" % objType
 
-                grid.set(i, j, v)
+                grid.set(j, i, v)
 
         return grid
 
@@ -454,7 +465,7 @@ class MiniGridEnv(gym.Env):
         self.grid_render = None
 
         # Renderer used to render observations (small-scale agent view)
-        self.obs_render = None
+        self.obs_render = [None] * n_agents
 
         # Set type of reward function
         self.reward_type = reward_type
@@ -520,7 +531,6 @@ class MiniGridEnv(gym.Env):
         # Map of object types to short string
         OBJECT_TO_STR = {
             'wall'          : 'W',
-            'floor'         : 'F',
             'uncovered'     : 'U',
         }
 
@@ -974,54 +984,50 @@ class MiniGridEnv(gym.Env):
 
         return obs
 
-    def get_obs_render(self, obs, tile_size=CELL_PIXELS//2, mode='pixmap'):
+    def get_obs_render(self, obs, grayscale=False, tile_size=CELL_PIXELS):
         """
         Render an agent observation for visualization
         """
 
-        if self.obs_render == None:
-            from gym_minigrid.rendering import Renderer
-            self.obs_render = Renderer(
-                self.agent_view_size * tile_size,
-                self.agent_view_size * tile_size
+        r = [None] * self.agents.n_agents
+        for i in range(self.agents.n_agents):
+
+            if self.obs_render[i] == None:
+                from gym_minigrid.rendering import Renderer
+                self.obs_render[i] = Renderer(
+                    self.agent_view_size * tile_size,
+                    self.agent_view_size * tile_size,
+                    True,
+                    title = 'Agent ' + str(i),
+                    info = False
+                )
+
+            r[i] = self.obs_render[i]
+
+            r[i].beginFrame()
+
+            grid = Grid.decode(obs[i])
+
+            # Render the whole grid
+            grid.render(r[i], tile_size, grayscale)
+
+            # Draw the agent
+            ratio = tile_size / CELL_PIXELS
+            r[i].push()
+            r[i].scale(ratio, ratio)
+            r[i].translate(
+                CELL_PIXELS * (0.5 + self.agent_view_size // 2),
+                CELL_PIXELS * (0.5 + self.agent_view_size // 2)
             )
+            r[i].setLineColor(51, 153, 255)
+            r[i].setColor(51, 153, 255)
+            r[i].drawCircle(0,0,10)
+            r[i].pop()
 
-        r = self.obs_render
-
-        r.beginFrame()
-
-        grid = Grid.decode(obs)
-
-        # Render the whole grid
-        grid.render(r, tile_size)
-
-        # Draw the agent
-        ratio = tile_size / CELL_PIXELS
-        r.push()
-        r.scale(ratio, ratio)
-        r.translate(
-            CELL_PIXELS * (0.5 + self.agent_view_size // 2),
-            CELL_PIXELS * (self.agent_view_size - 0.5)
-        )
-        r.rotate(3 * 90)
-        r.setLineColor(255, 0, 0)
-        r.setColor(255, 0, 0)
-        r.drawPolygon([
-            (-12, 10),
-            ( 12,  0),
-            (-12, -10)
-        ])
-        r.pop()
-
-        r.endFrame()
-
-        if mode == 'rgb_array':
-            return r.getArray()
-        elif mode == 'pixmap':
-            return r.getPixmap()
+            r[i].endFrame()
         return r
 
-    def render(self, mode='human', close=False, highlight=True, tile_size=CELL_PIXELS, info=''):
+    def render(self, mode='human', close=False, highlight=True, grayscale=False, tile_size=CELL_PIXELS, info=''):
         """
         Render the whole-grid human view
         """
@@ -1047,7 +1053,7 @@ class MiniGridEnv(gym.Env):
         r.beginFrame()
 
         # Render the whole grid
-        self.grid.render(r, tile_size)
+        self.grid.render(r, tile_size, grayscale)
 
         # Draw the agent
         for i in range(self.agents.n_agents):
@@ -1058,7 +1064,7 @@ class MiniGridEnv(gym.Env):
                 CELL_PIXELS * (self.agents.agent_pos[i][0] + 0.5),
                 CELL_PIXELS * (self.agents.agent_pos[i][1] + 0.5)
             )
-            r.setLineColor(0, 0, 0)
+            r.setLineColor(51, 153, 255)
             r.setColor(51, 153, 255)
             r.drawCircle(0,0,10)
             r.pop()
