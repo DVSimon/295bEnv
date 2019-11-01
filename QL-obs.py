@@ -54,21 +54,20 @@ def main():
 
     with open("config.yml", 'r') as ymlfile:
         cfg= yaml.load(ymlfile)
-        ql = cfg['ql']
-        rnd = cfg['rnd']
-
-    # parameters, can be adjusted in config.yml    
-    episodes = ql['episodes']
-    epsilon = ql['epsilon']
-    decay = ql['decay']
-    alpha = ql['alpha']
-    gamma = ql['gamma']
 
     # render boolean
-    grid_render = rnd['grid_render']
-    obs_render = rnd['obs_render']
-    gray = rnd['grayscale']
-    sleep = rnd['sleep']
+    grid_render = cfg['rnd']['grid_render']
+    grid_obs_render = cfg['rnd']['grid_obs_render']
+    obs_render = cfg['rnd']['obs_render']
+    gray = cfg['rnd']['grayscale']
+    sleep = cfg['rnd']['sleep']
+
+    # parameters, can be adjusted in config.yml    
+    episodes = cfg['ql']['episodes']
+    epsilon = cfg['ql']['epsilon']
+    decay = cfg['ql']['decay']
+    alpha = cfg['ql']['alpha']
+    gamma = cfg['ql']['gamma']
 
     # metrics
     steps_to_complete = []
@@ -98,7 +97,7 @@ def main():
             if obs_render:
                 env.get_obs_render(obs, grayscale=gray)
             if grid_render:
-                env.render('human', highlight=True, grayscale=gray, info="Episode: %s \tStep: %s" % (str(e),str(env.step_count)))
+                env.render('human', highlight=grid_obs_render, grayscale=gray, info="Episode: %s \tStep: %s" % (str(e),str(env.step_count)))
 
             time.sleep(sleep)
 
@@ -137,7 +136,8 @@ def main():
 
                 # Calculate new q value
                 new_q_val = (1-alpha) * old_val + alpha * (reward[agent_id] + gamma * next_max)
-                print(str(agent_id) + ':' + 'episode=%s, step=%s, reward=%.2f, new_q_val=%.2f, state=%s, action=%s' % (e, env.step_count, reward[agent_id], new_q_val, states[agent_id], actions[agent_id]))
+                print(str(agent_id) + ':' + 'episode=%s, step=%s, reward=%.2f, new_q_val=%.2f, state=%s, action=%s' \
+                            % (e, env.step_count, reward[agent_id], new_q_val, states[agent_id], actions[agent_id]))
                 
                 q_table[states[agent_id]][actions[agent_id]] = new_q_val
 
@@ -150,25 +150,33 @@ def main():
 
                 # plot steps by episode
                 steps_to_complete.append(env.step_count)
-                if e % 1000 == 0:
-                    plotter.plot_steps(steps_to_complete)
-                    with open("qt_output.csv", "w") as outfile:
-                        writer = csv.writer(outfile)
-                        for key, val in q_table.items():
-                            writer.writerow([key, *val])
+
+                # if e % 1000 == 0:
+                #     plotter.plot_steps(steps_to_complete)
+                #     with open("qt_output.csv", "w") as outfile:
+                #         writer = csv.writer(outfile)
+                #         for key, val in q_table.items():
+                #             writer.writerow([key, *val])
 
                 break
 
     print("Training finished.\n")
+
     #csv store steps_to_complete
-    w = csv.writer(open("steps_output.csv", "w+"))
+    filename = "steps_{}x{}_o{}_a{}_r{}_t{}.csv".format(env.grid_size, env.grid_size, cfg['env']['obstacles'], env.n_agents, env.obs_radius, env.reward_type)
+    w = csv.writer(open(filename, "w+"))
     for i in range(len(steps_to_complete)):
         w.writerow([i, steps_to_complete[i]])
+
+    #png save plot
+    plotter.plot_steps(steps_to_complete)
+
     #csv store q_table
     w = csv.writer(open("qt_output.csv", "w+"))
     for key, val in q_table.items():
         w.writerow([key, val])
-    #pkl
+
+    #pkl q_table
     f = open("qt.pkl","wb+")
     pickle.dump(dict(q_table), f)
     f.close()

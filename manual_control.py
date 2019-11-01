@@ -65,7 +65,7 @@ def main():
             obs, reward, done, agents, info = env.step(action)
             print('step,reward=',env.step_count, reward)
             
-            # env.get_obs_render(0, obs[0], grayscale=False)
+            env.get_obs_render(obs)
 
 
             # x = obs[0]
@@ -86,7 +86,6 @@ def main():
 
     while True:
         env.render('human', highlight=False, grayscale=False)
-        # env.get_obs_render(0, obs[0])
 
         # time.sleep(0.01)
 

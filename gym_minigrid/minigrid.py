@@ -577,7 +577,7 @@ class MiniGridEnv(gym.Env):
                 if cell is None or cell.type == 'wall':
                     reward[i] = -1
                 elif cell.type == 'uncovered':
-                    reward[i] = 1
+                    reward[i] = 10
                 else:
                     assert False, "reward calculation error"
 
