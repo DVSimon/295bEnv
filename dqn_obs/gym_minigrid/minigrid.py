@@ -318,7 +318,7 @@ class Grid:
 
         # Draw grid lines
         r.setLineColor(100, 100, 100)
-        
+
         for rowIdx in range(0, self.height):
             y = CELL_PIXELS * rowIdx
             r.drawLine(0, y, widthPx, y)
@@ -880,10 +880,10 @@ class MiniGridEnv(gym.Env):
             print('len of actions and # of agents is not same')
             #TODO: check o/p with return
             return
-        #print("input action", action)    
+        #print("input action", action)
         for i in range(len(action)):
-            action[i] = action[i][0]
-        #print(action)    
+            action[i] = action[i]
+        #print(action)
         #initializing lists for multi-agent
         left_pos = [None] * len(action)
         left_cell = [None] * len(action)
@@ -963,7 +963,7 @@ class MiniGridEnv(gym.Env):
             10- agent
         """
         obs = {}
-        
+
         for key,val in self.agents.agent_pos.items():
             obs[key] = np.zeros((self.agent_view_size, self.agent_view_size), dtype='uint8')
 
