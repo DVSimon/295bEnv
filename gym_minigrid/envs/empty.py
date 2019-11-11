@@ -10,7 +10,7 @@ class EmptyEnv(MiniGridEnv):
 
     def __init__(self):
         with open("config.yml", 'r') as ymlfile:
-            cfg = yaml.load(ymlfile)['env']
+            cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)['env']
         self.obstacles = cfg['obstacles']
 
         super().__init__(
@@ -39,19 +39,19 @@ class EmptyEnv(MiniGridEnv):
 
                 if self.grid.get(*xy) is None:
                     break
-            
+
             self.grid.set(*xy,Wall())
             obstacle_list.append(xy)
 
         # Set all non-walls as uncovered
-        self.grid.setAll(Uncovered()) 
-            
+        self.grid.setAll(Uncovered())
+
         # Place Agents
         for i in range(self.agents.n_agents):
             while True:
                 xy = (self.np_random.randint(1,width-1),self.np_random.randint(1,height-1))
-                
-                if xy not in self.agents.agent_pos.values() and xy not in obstacle_list:   
+
+                if xy not in self.agents.agent_pos.values() and xy not in obstacle_list:
                     self.agents.agent_pos[i] = xy
                     self.grid.set(*xy, None)
                     break

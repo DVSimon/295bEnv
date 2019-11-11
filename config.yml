@@ -18,7 +18,7 @@ rnd:
   grid_obs_render: True
   obs_render: False
   grayscale: False
-  sleep: 1
+  sleep: 0
 
 plt:
   regression_type: null  # null/lin/quad/exp

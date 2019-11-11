@@ -9,14 +9,14 @@ def exp_func(x, a, b, c):
 class Plotter:
     def __init__(self):
         with open("config.yml", 'r') as ymlfile:
-            cfg = yaml.load(ymlfile)
-        
+            cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+
         self.cfg = cfg
-    
+
     def gen_title(self):
         return 'MiniGridEnv: {} x {} / Agents: {}'.format(
-                                                        self.cfg['env']['grid_size'], 
-                                                        self.cfg['env']['grid_size'], 
+                                                        self.cfg['env']['grid_size'],
+                                                        self.cfg['env']['grid_size'],
                                                         self.cfg['env']['agents']
                                                         )
 
@@ -40,21 +40,21 @@ class Plotter:
 
         # print(txt)
         return txt_keys, txt_vals
-    
+
     def save_plot(self):
         filename = "st_plt_{}x{}_o{}_a{}_r{}_t{}.png".format(
-                                                        self.cfg['env']['grid_size'], 
-                                                        self.cfg['env']['grid_size'], 
-                                                        self.cfg['env']['obstacles'], 
-                                                        self.cfg['env']['agents'], 
-                                                        self.cfg['env']['obs_radius'], 
+                                                        self.cfg['env']['grid_size'],
+                                                        self.cfg['env']['grid_size'],
+                                                        self.cfg['env']['obstacles'],
+                                                        self.cfg['env']['agents'],
+                                                        self.cfg['env']['obs_radius'],
                                                         self.cfg['env']['reward_type']
                                                         )
         plt.savefig(filename)
 
     def plot_steps(self, steps_list):
         if len(steps_list) >= 2:
-            x = np.arange(0, len(steps_list)) 
+            x = np.arange(0, len(steps_list))
 
             plt.clf()
 
@@ -81,7 +81,7 @@ class Plotter:
             plt.text(0.97, 0.6, self.gen_text()[1], transform=plt.gca().transAxes, fontsize=8, ha='right')
             plt.xlabel('Episode')
             plt.ylabel('Steps to completion')
-            
+
             plt.ion()
             plt.ioff()
             self.save_plot()
