@@ -14,7 +14,7 @@ ql:
   episodes: 1000
 
 rnd:
-  grid_render: False
+  grid_render: True
   grid_obs_render: True
   obs_render: False
   grayscale: False

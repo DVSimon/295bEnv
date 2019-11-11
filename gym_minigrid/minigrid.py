@@ -318,7 +318,7 @@ class Grid:
 
         # Draw grid lines
         r.setLineColor(100, 100, 100)
-        
+
         for rowIdx in range(0, self.height):
             y = CELL_PIXELS * rowIdx
             r.drawLine(0, y, widthPx, y)
@@ -601,6 +601,42 @@ class MiniGridEnv(gym.Env):
             assert False, "reward type not valid"
 
         return reward
+
+    def _reward_dqn_loc(self, reward_type, i):
+        """
+        Compute the reward to be given at given step
+        """
+        if reward_type == 0:
+            # uncovered = +1; covered/wall = -1
+            agent_pos = self.agents.agent_pos[i]
+            cell = self.grid.get(agent_pos[0],agent_pos[1])
+            if cell is None or cell.type == 'wall':
+                reward = -1
+            elif cell.type == 'uncovered':
+                reward = 10
+            else:
+                assert False, "reward calculation error"
+
+                #increment visited count
+            self.grid_visited[agent_pos[1]-1, agent_pos[0]-1] += 1
+        elif reward_type == 1:
+            # uncovered = +100; covered/wall = -1*times_visited
+            agent_pos = self.agents.agent_pos[i]
+            cell = self.grid.get(agent_pos[0],agent_pos[1])
+            if cell is None or cell.type == 'wall':
+                reward = -1 * self.grid_visited[agent_pos[1]-1, agent_pos[0]-1]
+            elif cell.type == 'uncovered':
+                reward = 10
+            else:
+                assert False, "reward calculation error"
+
+                #increment visited count
+            self.grid_visited[agent_pos[1]-1, agent_pos[0]-1] += 1
+        else:
+            assert False, "reward type not valid"
+
+        return reward
+
 
     def _rand_int(self, low, high):
         """
@@ -936,6 +972,149 @@ class MiniGridEnv(gym.Env):
 
         return obs, reward, done, self.agents, {}
 
+    def step_dqn_loc(self, action, i):
+        """
+        Perform a step for each agent
+            - take given action
+            - update grid
+            - calculate reward
+            - generate observation
+        """
+        for j in range(len(action)):
+            action[j] = action[j][0]
+
+        self.step_count += 1
+
+        done = False
+
+
+        #print(action)
+        #initializing lists for multi-agent
+        left_pos = [None] * self.agents.n_agents
+        left_cell = [None] * self.agents.n_agents
+        right_pos = [None] * self.agents.n_agents
+        right_cell = [None] * self.agents.n_agents
+        up_pos = [None] * self.agents.n_agents
+        up_cell = [None] * self.agents.n_agents
+        down_pos = [None] * self.agents.n_agents
+        down_cell = [None] * self.agents.n_agents
+
+        #cell direction contents
+        #(m.a- TODO: make self.left_pos and all list instead of single value)
+        left_pos = self.left_pos
+        right_pos = self.right_pos
+        up_pos = self.up_pos
+        down_pos = self.down_pos
+        left_cell[i] = self.grid.get(left_pos[i][0],left_pos[i][1])
+        right_cell[i] = self.grid.get(right_pos[i][0],right_pos[i][1])
+        up_cell[i] = self.grid.get(up_pos[i][0],up_pos[i][1])
+        down_cell[i] = self.grid.get(down_pos[i][0],down_pos[i][1])
+        if action[0] == self.actions.left:
+            if (left_cell[i] == None or left_cell[i].can_overlap()) and tuple(left_pos[i]) not in self.agents.agent_pos.values():
+                self.agents.agent_pos[i] = tuple(left_pos[i])
+        elif action[0] == self.actions.right:
+            if (right_cell[i] == None or right_cell[i].can_overlap()) and tuple(right_pos[i]) not in self.agents.agent_pos.values():
+                self.agents.agent_pos[i] = tuple(right_pos[i])
+        elif action[0] == self.actions.up:
+            if (up_cell[i] == None or up_cell[i].can_overlap()) and tuple(up_pos[i]) not in self.agents.agent_pos.values():
+                self.agents.agent_pos[i] = tuple(up_pos[i])
+        elif action[0] == self.actions.down:
+            if (down_cell[i] == None or down_cell[i].can_overlap()) and tuple(down_pos[i]) not in self.agents.agent_pos.values():
+                self.agents.agent_pos[i] = tuple(down_pos[i])
+        else:
+            assert False, "unknown action"
+
+        #determine reward
+        reward = self._reward_dqn_loc(self.reward_type, i)
+
+        #set cell as covered
+        self.grid.set(self.agents.agent_pos[i][0],self.agents.agent_pos[i][1],None)
+
+        #check if all cells covered
+        grid_str = self.__str__()
+        if 'U' not in grid_str:
+            done = True
+
+        #generate new obs
+        obs = self.gen_obs()
+
+        return obs, reward, done, self.agents, {}
+
+    def step_dqn_obs(self, action):
+        """
+        Perform a step for each agent
+            - take given action
+            - update grid
+            - calculate reward
+            - generate observation
+        """
+        self.step_count += 1
+
+        reward = [None] * self.agents.n_agents
+        done = False
+
+        if len(action) != self.agents.n_agents:
+            print('len of actions and # of agents is not same')
+            #TODO: check o/p with return
+            return
+        #print("input action", action)
+        for i in range(len(action)):
+            action[i] = action[i][0]
+        #print(action)
+        #initializing lists for multi-agent
+        left_pos = [None] * len(action)
+        left_cell = [None] * len(action)
+        right_pos = [None] * len(action)
+        right_cell = [None] * len(action)
+        up_pos = [None] * len(action)
+        up_cell = [None] * len(action)
+        down_pos = [None] * len(action)
+        down_cell = [None] * len(action)
+
+        #cell direction contents
+        #(m.a- TODO: make self.left_pos and all list instead of single value)
+        left_pos = self.left_pos
+        right_pos = self.right_pos
+        up_pos = self.up_pos
+        down_pos = self.down_pos
+        for i in range(len(action)):
+            left_cell[i] = self.grid.get(left_pos[i][0],left_pos[i][1])
+            right_cell[i] = self.grid.get(right_pos[i][0],right_pos[i][1])
+            up_cell[i] = self.grid.get(up_pos[i][0],up_pos[i][1])
+            down_cell[i] = self.grid.get(down_pos[i][0],down_pos[i][1])
+            if action[i] == self.actions.left:
+                if (left_cell[i] == None or left_cell[i].can_overlap()) and tuple(left_pos[i]) not in self.agents.agent_pos.values():
+                    self.agents.agent_pos[i] = tuple(left_pos[i])
+            elif action[i] == self.actions.right:
+                if (right_cell[i] == None or right_cell[i].can_overlap()) and tuple(right_pos[i]) not in self.agents.agent_pos.values():
+                    self.agents.agent_pos[i] = tuple(right_pos[i])
+            elif action[i] == self.actions.up:
+                if (up_cell[i] == None or up_cell[i].can_overlap()) and tuple(up_pos[i]) not in self.agents.agent_pos.values():
+                    self.agents.agent_pos[i] = tuple(up_pos[i])
+            elif action[i] == self.actions.down:
+                if (down_cell[i] == None or down_cell[i].can_overlap()) and tuple(down_pos[i]) not in self.agents.agent_pos.values():
+                    self.agents.agent_pos[i] = tuple(down_pos[i])
+            else:
+                assert False, "unknown action"
+
+        #determine reward
+        reward = self._reward(self.reward_type)
+
+        #set cell as covered
+        for i in range(self.agents.n_agents):
+            self.grid.set(self.agents.agent_pos[i][0],self.agents.agent_pos[i][1],None)
+
+        #check if all cells covered
+        grid_str = self.__str__()
+        if 'U' not in grid_str:
+            done = True
+
+        #generate new obs
+        obs = self.gen_obs()
+
+        return obs, reward, done, self.agents, {}
+
+
     def gen_obs_grid(self):
         #print('called get_obs_grid')
         """
@@ -962,7 +1141,7 @@ class MiniGridEnv(gym.Env):
             10- agent
         """
         obs = {}
-        
+
         for key,val in self.agents.agent_pos.items():
             obs[key] = np.zeros((self.agent_view_size, self.agent_view_size), dtype='uint8')
 
@@ -984,7 +1163,7 @@ class MiniGridEnv(gym.Env):
 
         return obs
 
-    def get_obs_render(self, obs, grayscale=False, tile_size=CELL_PIXELS):
+    def get_obs_render(self, obs, mode='human', grayscale=False, tile_size=CELL_PIXELS):
         """
         Render an agent observation for visualization
         """
@@ -1025,6 +1204,9 @@ class MiniGridEnv(gym.Env):
             r[i].pop()
 
             r[i].endFrame()
+        if mode == 'rgb_array':
+            for i in range(len(r)):
+                r[i] = r[i].getArray()
         return r
 
     def render(self, mode='human', close=False, highlight=True, grayscale=False, tile_size=CELL_PIXELS, info=''):
