@@ -62,6 +62,8 @@ def main():
     sleep = rnd['sleep']
 
     q_table = pickle.load(open('qt.pkl', 'rb'))
+    for key in q_table:
+        print(key)
     # print(len(q_table))
 
     obs = env.reset()

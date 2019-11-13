@@ -145,8 +145,6 @@ def main():
            
             if done:
                 print('done!')
-                # print("q table:",q_table)
-                # print("times_visited:",env.grid_visited)
 
                 # plot steps by episode
                 steps_to_complete.append(env.step_count)
@@ -162,22 +160,24 @@ def main():
 
     print("Training finished.\n")
 
-    #csv store steps_to_complete
+    # csv store steps_to_complete
     filename = "steps_{}x{}_o{}_a{}_r{}_t{}.csv".format(env.grid_size, env.grid_size, cfg['env']['obstacles'], env.n_agents, env.obs_radius, env.reward_type)
     w = csv.writer(open(filename, "w+"))
     for i in range(len(steps_to_complete)):
         w.writerow([i, steps_to_complete[i]])
 
-    #png save plot
+    # png save plot/show
     plotter.plot_steps(steps_to_complete)
 
-    #csv store q_table
-    w = csv.writer(open("qt_output.csv", "w+"))
-    for key, val in q_table.items():
-        w.writerow([key, val])
+    # #csv store q_table
+    # w = csv.writer(open("qt_output.csv", "w+"))
+    # for key, val in q_table.items():
+    #     w.writerow([key, val])
 
-    #pkl q_table
+    # pkl q_table
     f = open("qt.pkl","wb+")
+    for key in q_table:
+        print(key)
     pickle.dump(dict(q_table), f)
     f.close()
 
