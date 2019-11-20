@@ -76,7 +76,17 @@ def main():
     # q_table = defaultdict(lambda: np.random.uniform(size=(env.action_space.n,)))
     q_table = defaultdict(lambda: np.zeros(shape=(len(env.actions),)))
 
-    for e in range(episodes):
+    run_ep = 0
+    for e in range(episodes+1000):
+        if e >= episodes and run_ep == 0:
+            grid_obs_render = True
+            grid_render = True
+            run_ep = int(input("Enter number of episodes: "))
+            sleep = float(input("Enter sleep interval: "))
+
+        if run_ep > 0:
+            run_ep -= 1
+
         # Calculate new epsilon-decay value -- decays with each new episode
         epsilon = epsilon*decay
 
@@ -155,8 +165,8 @@ def main():
                 #         writer = csv.writer(outfile)
                 #         for key, val in q_table.items():
                 #             writer.writerow([key, *val])
-
                 break
+
 
     print("Training finished.\n")
 

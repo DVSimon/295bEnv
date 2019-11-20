@@ -85,7 +85,7 @@ def main():
     renderer.window.setKeyDownCb(keyDownCb)
 
     while True:
-        env.render('human', highlight=False, grayscale=False)
+        env.render('human', highlight=True, grayscale=False)
 
         # time.sleep(0.01)
 
