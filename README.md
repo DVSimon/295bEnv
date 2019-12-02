@@ -38,6 +38,15 @@ Requirements:
 ### To change plot type of number of moves taken
 - Change regression_type to null/lin/quad/exp
 
+### Deep Q Network(DQN) approach:
+- DQN_loc.py script is location based DQN implementation
+  Each agent takes action one by one.
+  Entire Image of Environment is fed to Neural Network(NN).
+  NN outputs single value of optimum action for that each agents one by one.
+- DQN_obs.py script is observation based DQN implementation
+  Each agent's observation space is fed to NN.
+  NN outputs action value for each agents individually & simultaneously. 
+  
 ## How to run 
 
 ### Q-Learning
@@ -46,3 +55,11 @@ Requirements:
 ```
 
 ### DQN
+- location based DQN
+'''
+./DQN_loc.py
+'''
+- observation based DQN
+'''
+./DQN_obs.py
+'''
