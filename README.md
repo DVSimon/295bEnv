@@ -9,3 +9,15 @@ Requirements:
 - NumPy
 - PyQT 5
 - Matplotlib
+- Pickle
+
+
+## Configuration
+- Navigate to config.yml file
+### Environment Variables
+
+### To turn on overall grid rendering
+- Chan
+
+
+## How to run
