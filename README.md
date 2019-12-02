@@ -7,7 +7,15 @@ Install Python >= 3.5 and clone this project:
 $ git clone https://github.com/DVSimon/295bEnv.git
 $ cd 295bEnv
 ```
-
+Set up the virtual environment:
+```
+$ python3 -m venv env
+$ source env/bin/activate
+```
+Install project dependencies:
+```
+$ pip3 install -r requirements.txt
+```
 
 ## Configuration
 - Navigate to config.yml file
