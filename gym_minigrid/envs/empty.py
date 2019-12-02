@@ -1,3 +1,7 @@
+'''
+Generates environment based on configuration
+'''
+
 from gym_minigrid.minigrid import *
 from gym_minigrid.register import register
 import numpy as np

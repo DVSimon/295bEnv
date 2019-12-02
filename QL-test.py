@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+'''
+Run simulation based on q-table output in qt.pkl
+'''
 
 import gym, gym_minigrid
 from gym_minigrid.plot import Plotter

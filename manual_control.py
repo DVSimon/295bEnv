@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+'''
+Manual simulation, with user input
+'''
 
 from __future__ import division, print_function
 
@@ -24,15 +27,12 @@ def main():
     # Load the gym environment
     env = gym.make(options.env_name)
 
-    # def resetEnv():
-        # env.seed()
     obs = env.reset()
 
     n_agents = env.agents.n_agents
 
     # Create a window to render into
     renderer = env.render('human', highlight=True, grayscale=False)
-    # env.get_obs_render(0, obs[0], grayscale=False
 
     def keyDownCb(keyName):
         keyDownCb.num += 1
@@ -65,16 +65,7 @@ def main():
             obs, reward, done, agents, info = env.step(action)
             print('step,reward=',env.step_count, reward)
             
-            env.get_obs_render(obs)
-
-
-            # x = obs[0]
-            # temp_obs = ''
-            # for list in x:
-            #     temp = '-'.join(map(str, list))
-            #     temp_obs += '-' + temp
-            # print('step=%s, reward=%.2f, position=%s' % (env.step_count, reward, agent_position))
-            # print('obs_space=%s, action_space=%s, grid_size=%s' % (env.observation_space, env.action_space, grid_size))
+            # env.get_obs_render(obs)
 
             if done:
                 print('done!')

@@ -1,12 +1,13 @@
+'''
+Defines the environment grid, agents, and reward
+'''
+
 import math
 import gym
 from enum import IntEnum
 import numpy as np
 from gym import error, spaces, utils
 from gym.utils import seeding
-
-#from gym_minigrid.action_space import MultiAgentActionSpace
-#from gym_minigrid.observation_space import MultiAgentObservationSpace
 
 # Size in pixels of a cell in the full-scale human view
 CELL_PIXELS = 32

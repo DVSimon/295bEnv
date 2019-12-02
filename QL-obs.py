@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+'''
+Observation-based QL simulation and training
+'''
 
 import gym, gym_minigrid
 from gym_minigrid.plot import Plotter
@@ -77,15 +80,7 @@ def main():
     q_table = defaultdict(lambda: np.zeros(shape=(len(env.actions),)))
 
     run_ep = 0
-    for e in range(episodes+1000):
-        if e >= episodes and run_ep == 0:
-            grid_obs_render = True
-            grid_render = True
-            run_ep = int(input("Enter number of episodes: "))
-            sleep = float(input("Enter sleep interval: "))
-
-        if run_ep > 0:
-            run_ep -= 1
+    for e in range(episodes):
 
         # Calculate new epsilon-decay value -- decays with each new episode
         epsilon = epsilon*decay

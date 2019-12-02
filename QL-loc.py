@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+'''
+[Deprecated] Location-based QL simulation and training
+'''
 
 import gym
 import gym_minigrid
@@ -10,6 +13,9 @@ import random
 import matplotlib.pyplot as plt
 
 def main():
+    print("Warning: location-based QL is deprecated and non-functional; use QL-obs instead")
+    return
+
     parser = OptionParser()
     parser.add_option(
         "-e",

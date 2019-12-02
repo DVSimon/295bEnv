@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+'''
+Generates plots for QL training
+'''
 
 import matplotlib.pyplot as plt
 import numpy as np

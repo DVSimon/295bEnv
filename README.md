@@ -1,4 +1,4 @@
-# Multi-Agent Coverage Control with RL
+# Multi-Agent Coverage Control utilizing Reinforcement Learning
 Adapted from [Minimalistic Gridworld Environment (MiniGrid)](https://github.com/maximecb/gym-minigrid)
 
 ## Installation and Setup
@@ -16,6 +16,25 @@ Install project dependencies:
 ```
 $ pip3 install -r requirements.txt
 ```
+
+## How to run 
+### Q-Learning
+```
+./QL-obs.py
+```
+
+### DQN
+- location based DQN
+
+```
+./DQN-loc.py
+```
+- observation based DQN
+
+```
+./DQN-obs.py
+```
+
 
 ## Configuration
 - Navigate to config.yml file
@@ -45,7 +64,8 @@ $ pip3 install -r requirements.txt
 ### To change plot type of number of moves taken
 - Change regression_type to null/lin/quad/exp
 
-### Deep Q Network(DQN) approach:
+
+## Deep Q Network(DQN) approach:
 - DQN_loc.py script is location based DQN implementation.
 
   Each agent takes action one by one.
@@ -59,21 +79,3 @@ $ pip3 install -r requirements.txt
   
   NN outputs action value for each agents individually & simultaneously. 
   
-## How to run 
-
-### Q-Learning
-```
-./QL-obs.py
-```
-
-### DQN
-- location based DQN
-
-```
-./DQN_loc.py
-```
-- observation based DQN
-
-```
-./DQN_obs.py
-```
