@@ -1,5 +1,3 @@
-TODO: Update README
-
 # Multi-Agent Coverage Control with RL
 Adapted from [Minimalistic Gridworld Environment (MiniGrid)](https://github.com/maximecb/gym-minigrid)
 
