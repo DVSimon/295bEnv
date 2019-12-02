@@ -14,9 +14,9 @@ ql:
   episodes: 2
 
 rnd:
-  grid_render: False
-  grid_obs_render: False
-  obs_render: False
+  grid_render: True
+  grid_obs_render: True
+  obs_render: True
   grayscale: False
   sleep: 0
 
