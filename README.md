@@ -40,7 +40,11 @@ Requirements:
 ### To change plot type of number of moves taken
 - Change regression_type to null/lin/quad/exp
 
-## How to run
+## How to run 
+
+### Q-Learning
 ```
 ./QL-obs.py
 ```
+
+### DQN
