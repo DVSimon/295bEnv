@@ -57,11 +57,11 @@ Requirements:
 ### DQN
 - location based DQN
 
-'''
+```
 ./DQN_loc.py
-'''
+```
 - observation based DQN
 
-'''
+```
 ./DQN_obs.py
-'''
+```
