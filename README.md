@@ -1,13 +1,12 @@
 # Multi-Agent Coverage Control with RL
 Adapted from [Minimalistic Gridworld Environment (MiniGrid)](https://github.com/maximecb/gym-minigrid)
 
-Requirements:
-- Python 3.5+
-- OpenAI Gym
-- NumPy
-- PyQT 5
-- Matplotlib
-- Pickle
+## Installation and Setup
+Install Python >= 3.5 and clone this project:
+```
+$ git clone https://github.com/DVSimon/295bEnv.git
+$ cd 295bEnv
+```
 
 
 ## Configuration
