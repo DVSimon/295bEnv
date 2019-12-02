@@ -41,4 +41,6 @@ Requirements:
 - Change regression_type to null/lin/quad/exp
 
 ## How to run
-> ./QL-obs.py
+```
+./QL-obs.py
+```
