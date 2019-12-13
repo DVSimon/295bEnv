@@ -8,6 +8,8 @@ Generate rendering of coverage map
 import argparse
 import csv
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib
 
 # Size in pixels of a cell in the full-scale human view
 CELL_PIXELS = 32
@@ -40,6 +42,22 @@ COLOR_TO_IDX = {
 
 IDX_TO_COLOR = dict(zip(COLOR_TO_IDX.values(), COLOR_TO_IDX.keys()))
 
+def render(color_map, N=12):
+    last_episode = color_map[-1]
+    last_episode_grid = np.reshape(last_episode, (N,N))
+    #print(last_episode_grid)
+    fig, ax = plt.subplots(1, 1, tight_layout=True)
+    my_cmap = matplotlib.colors.ListedColormap([COLORS['grey']/255, COLORS['blue']/255, COLORS['yellow']/255, COLORS['green']/255])
+    for x in range(N + 1):
+        ax.axhline(x, lw=2, color='k', zorder=5)
+        ax.axvline(x, lw=2, color='k', zorder=5)
+    ax.imshow(last_episode_grid, interpolation='none', cmap=my_cmap, extent=[0, N, 0, N], zorder=0)
+
+    #plt.matshow(last_episode_grid)
+
+    ax.axis('off')
+    plt.show()
+
 def main():
     parser = argparse.ArgumentParser(
         description='Input csv file of coverage map')
@@ -51,6 +69,7 @@ def main():
     coverage_maps = np.array(x).astype("int")
 
     print(coverage_maps)
+    img = render(coverage_maps, 12)
 
     #TODO: render coverage map for select episodes
     # ensure map is consistent with gym environment
