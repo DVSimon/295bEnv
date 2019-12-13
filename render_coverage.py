@@ -9,6 +9,9 @@ import argparse
 import csv
 import numpy as np
 
+# Size in pixels of a cell in the full-scale human view
+CELL_PIXELS = 32
+
 # Map of color names to RGB values
 COLORS = {
     'red'   : np.array([255, 0, 0]),
