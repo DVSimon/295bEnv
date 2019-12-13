@@ -173,7 +173,7 @@ def main():
     filename = "coverage_{}x{}_o{}_a{}_r{}_t{}.csv".format(env.grid_size, env.grid_size, cfg['env']['obstacles'], env.n_agents, env.obs_radius, env.reward_type)
     w = csv.writer(open(filename, "w+"))
     for i in range(len(coverage_maps)):
-        w.writerow([i, coverage_maps[i]])
+        w.writerow(coverage_maps[i])
 
     # csv store steps_to_complete
     filename = "steps_{}x{}_o{}_a{}_r{}_t{}.csv".format(env.grid_size, env.grid_size, cfg['env']['obstacles'], env.n_agents, env.obs_radius, env.reward_type)
