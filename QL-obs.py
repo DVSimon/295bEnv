@@ -74,6 +74,7 @@ def main():
 
     # metrics
     steps_to_complete = []
+    coverage_maps = []
 
     # Initalize q-table [observation space x action space]
     # q_table = defaultdict(lambda: np.random.uniform(size=(env.action_space.n,)))
@@ -153,6 +154,9 @@ def main():
 
                 # plot steps by episode
                 steps_to_complete.append(env.step_count)
+                coverage_maps.append(env.coverage_map)
+                print(env.coverage_map)
+                # input()
 
                 # if e % 1000 == 0:
                 #     plotter.plot_steps(steps_to_complete)
@@ -164,6 +168,12 @@ def main():
 
 
     print("Training finished.\n")
+
+    # csv store coverage maps
+    filename = "coverage_{}x{}_o{}_a{}_r{}_t{}.csv".format(env.grid_size, env.grid_size, cfg['env']['obstacles'], env.n_agents, env.obs_radius, env.reward_type)
+    w = csv.writer(open(filename, "w+"))
+    for i in range(len(coverage_maps)):
+        w.writerow([i, coverage_maps[i]])
 
     # csv store steps_to_complete
     filename = "steps_{}x{}_o{}_a{}_r{}_t{}.csv".format(env.grid_size, env.grid_size, cfg['env']['obstacles'], env.n_agents, env.obs_radius, env.reward_type)

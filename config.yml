@@ -1,6 +1,6 @@
 env:
-  grid_size: 10
-  obstacles: 0
+  grid_size: 12
+  obstacles: 3
   agents: 3
   obs_radius: 1
   reward_type: 1
@@ -11,7 +11,7 @@ ql:
   decay: 0.999
   alpha: 0.1
   gamma: 0.6
-  episodes: 2
+  episodes: 5
 
 rnd:
   grid_render: True
