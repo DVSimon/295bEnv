@@ -1,17 +1,17 @@
 env:
   grid_size: 12
-  obstacles: 3
-  agents: 3
-  obs_radius: 1
+  obstacles: 15
+  agents: 4
+  obs_radius: 2
   reward_type: 1
-  seed: 26
+  seed: 28
 
 ql:
-  epsilon: 0.95
-  decay: 0.999
-  alpha: 0.1
+  epsilon: 0.8
+  decay: 0.99
+  alpha: 0.01
   gamma: 0.6
-  episodes: 5
+  episodes: 1
 
 rnd:
   grid_render: True

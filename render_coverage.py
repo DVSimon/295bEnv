@@ -16,41 +16,34 @@ CELL_PIXELS = 32
 
 # Map of color names to RGB values
 COLORS = {
-    'red'   : np.array([255, 0, 0]),
-    'green' : np.array([0, 153, 0]),
-    'blue'  : np.array([51, 153, 255]),
+    'red'   : np.array([255, 0, 0,200]),
+    'green' : np.array([0, 153, 0,200]),
+    'blue'  : np.array([51, 153, 255,200]),
     'purple': np.array([112, 39, 195]),
-    'yellow': np.array([255, 255, 0]),
+    'yellow': np.array([255, 255, 0,200]),
     'grey'  : np.array([100, 100, 100]),
     'black' : np.array([0, 0, 0]),
     'white' : np.array([255, 255, 255]),
+    'electricblue' : np.array([72, 151, 216]),
+    'banana' : np.array([255, 219, 92]),
+    'watermelon' : np.array([250, 110, 89]),
+    'canteloupe' : np.array([248, 160, 85]),
+    'purple-ish' : np.array([180, 106, 226])
+
 }
 
 COLOR_NAMES = sorted(list(COLORS.keys()))
 
-# Used to map colors to integers
-COLOR_TO_IDX = {
-    'red'   : 0,
-    'green' : 1,
-    'blue'  : 2,
-    'purple': 3,
-    'yellow': 4,
-    'grey'  : 5,
-    'black' : 6,
-    'white' : 7,
-}
-
-IDX_TO_COLOR = dict(zip(COLOR_TO_IDX.values(), COLOR_TO_IDX.keys()))
 
 def render(color_map, N=12):
     last_episode = color_map[-1]
     last_episode_grid = np.reshape(last_episode, (N,N))
     #print(last_episode_grid)
     fig, ax = plt.subplots(1, 1, tight_layout=True)
-    my_cmap = matplotlib.colors.ListedColormap([COLORS['grey']/255, COLORS['blue']/255, COLORS['yellow']/255, COLORS['green']/255])
+    my_cmap = matplotlib.colors.ListedColormap([COLORS['grey']/255, COLORS['electricblue']/255, COLORS['banana']/255, COLORS['watermelon']/255,COLORS['canteloupe']/255,COLORS['purple-ish']/255])
     for x in range(N + 1):
-        ax.axhline(x, lw=2, color='k', zorder=5)
-        ax.axvline(x, lw=2, color='k', zorder=5)
+        ax.axhline(x, lw=1, color=COLORS['grey']/255, zorder=5)
+        ax.axvline(x, lw=1, color=COLORS['grey']/255, zorder=5)
     ax.imshow(last_episode_grid, interpolation='none', cmap=my_cmap, extent=[0, N, 0, N], zorder=0)
 
     #plt.matshow(last_episode_grid)
@@ -69,7 +62,7 @@ def main():
     coverage_maps = np.array(x).astype("int")
 
     print(coverage_maps)
-    img = render(coverage_maps, 12)
+    render(coverage_maps, 12)
 
     #TODO: render coverage map for select episodes
     # ensure map is consistent with gym environment
