@@ -515,6 +515,9 @@ class MiniGridEnv(gym.Env):
 
     def gen_coverage_map(self):
         coverage_map = [-1 for i in range(self.grid_size**2)]
+        for i in range(self.agents.n_agents):
+            loc = self.agents.agent_pos[i][0] + self.agents.agent_pos[i][1] * self.grid_size
+            coverage_map[loc] = i
 
         return coverage_map
 

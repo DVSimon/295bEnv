@@ -104,7 +104,7 @@ def main():
                 env.get_obs_render(obs, grayscale=gray)
             if grid_render:
                 env.render('human', highlight=grid_obs_render, grayscale=gray, info="Episode: %s \tStep: %s" % (str(e),str(env.step_count)))
-
+            # input()
             time.sleep(sleep)
 
             # Determine whether to explore or exploit for all agents during current step

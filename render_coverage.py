@@ -36,7 +36,7 @@ COLOR_NAMES = sorted(list(COLORS.keys()))
 
 
 def render(color_map, N=12):
-    last_episode = color_map[-1]
+    last_episode = color_map[960]
     last_episode_grid = np.reshape(last_episode, (N,N))
     #print(last_episode_grid)
     fig, ax = plt.subplots(1, 1, tight_layout=True)
