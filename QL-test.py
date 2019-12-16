@@ -129,8 +129,5 @@ def main():
 
             states[agent_id] = next_state
 
-
-
-
 if __name__ == "__main__":
     main()

@@ -506,12 +506,30 @@ class MiniGridEnv(gym.Env):
         # Step count since episode start
         self.step_count = 0
 
+        # Generate coverage map and trajectory
         self.coverage_map = self.gen_coverage_map()
+        self.trajectory = self.gen_trajectory()
 
         # Return first observation
         obs = self.gen_obs()
 
         return obs
+
+    def gen_trajectory(self):
+        trajectory = {}
+        for i in range(self.agents.n_agents):
+            trajectory[i] = []
+            trajectory[i].append(tuple((self.agents.agent_pos[i])))
+
+        return trajectory
+
+    def update_trajectory(self):
+        trajectory = self.trajectory
+
+        for i in range(self.agents.n_agents):
+            trajectory[i].append(self.agents.agent_pos[i])
+
+        return trajectory
 
     def gen_coverage_map(self):
         coverage_map = [-1 for i in range(self.grid_size**2)]
@@ -979,8 +997,9 @@ class MiniGridEnv(gym.Env):
         #determine reward
         reward = self._reward(self.reward_type)
 
-        #update coverage map
+        #update coverage map and trajectory
         self.coverage_map = self.update_coverage_map()
+        self.trajectory = self.update_trajectory()
 
         #set cell as covered
         for i in range(self.agents.n_agents):

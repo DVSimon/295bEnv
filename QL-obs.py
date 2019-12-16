@@ -2,7 +2,6 @@
 '''
 Observation-based QL simulation and training
 '''
-
 import gym, gym_minigrid
 from gym_minigrid.plot import Plotter
 import numpy as np
@@ -75,6 +74,7 @@ def main():
     # metrics
     steps_to_complete = []
     coverage_maps = []
+    trajectories = []
 
     # Initalize q-table [observation space x action space]
     # q_table = defaultdict(lambda: np.random.uniform(size=(env.action_space.n,)))
@@ -155,17 +155,9 @@ def main():
                 # plot steps by episode
                 steps_to_complete.append(env.step_count)
                 coverage_maps.append(env.coverage_map)
-                print(env.coverage_map)
-                # input()
-
-                # if e % 1000 == 0:
-                #     plotter.plot_steps(steps_to_complete)
-                #     with open("qt_output.csv", "w") as outfile:
-                #         writer = csv.writer(outfile)
-                #         for key, val in q_table.items():
-                #             writer.writerow([key, *val])
+                trajectories.append(env.trajectory)
+                
                 break
-
 
     print("Training finished.\n")
 
@@ -174,15 +166,25 @@ def main():
     w = csv.writer(open(filename, "w+"))
     for i in range(len(coverage_maps)):
         w.writerow(coverage_maps[i])
+    print('coverage saved')
+
+    # csv store coverage maps
+    filename = "trajectory_{}x{}_o{}_a{}_r{}_t{}.pkl".format(env.grid_size, env.grid_size, cfg['env']['obstacles'], env.n_agents, env.obs_radius, env.reward_type)
+    f = open(filename, "wb+")
+    pickle.dump(trajectories, f)
+    f.close()
+    print('trajectories saved')
 
     # csv store steps_to_complete
     filename = "steps_{}x{}_o{}_a{}_r{}_t{}.csv".format(env.grid_size, env.grid_size, cfg['env']['obstacles'], env.n_agents, env.obs_radius, env.reward_type)
     w = csv.writer(open(filename, "w+"))
     for i in range(len(steps_to_complete)):
         w.writerow([i, steps_to_complete[i]])
+    print('steps saved')
 
     # png save plot/show
     plotter.plot_steps(steps_to_complete)
+    print('steps graph saved')
 
     # #csv store q_table
     # w = csv.writer(open("qt_output.csv", "w+"))
@@ -191,10 +193,9 @@ def main():
 
     # pkl q_table
     f = open("qt.pkl","wb+")
-    for key in q_table:
-        print(key)
     pickle.dump(dict(q_table), f)
     f.close()
+    print('Q table saved')
 
 if __name__ == "__main__":
     main()
